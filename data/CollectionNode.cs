@@ -78,6 +78,20 @@ namespace cs609.data
       }
       Console.WriteLine(indentString + "}");
     }
+    public virtual string ToString(int indent)
+    {
+        var jSonString = new StringBuilder();
+        string indentString = new String(' ', indent);
+        jSonString.Append("{");
+        foreach (KeyValuePair<string, INode> pair in _collection)
+        {
+            jSonString.Append(indentString + "  " + pair.Key + " : ");
+            pair.Value.Print(indent + 2);
+        }
+        Console
+            .WriteLine(indentString + "}");
+        return "";
+    }
 
     private IDictionary<string, INode> _collection;
   }

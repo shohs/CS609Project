@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using cs609.data;
+using Newtonsoft.Json;
 
 namespace cs609.utilities
 {
@@ -44,11 +45,11 @@ namespace cs609.utilities
             try
             {
                 var filePath = @"C:\temp\" + document.StoreName + @"\" + document.Id + ".bin";
-
+                var json = JsonConvert.SerializeObject(document.Node);
                 using (var binWriter =
                     new BinaryWriter(File.Open(filePath, FileMode.Create)))
                 {
-                    binWriter.Write(document.Node.Print());
+                    binWriter.Write(json);
                 }
                 Console.WriteLine("Data Written!");
                 Console.WriteLine();
@@ -59,21 +60,5 @@ namespace cs609.utilities
             }
 
         }
-
-        //public virtual string ToString(int indent)
-        //{
-        //    var jSonString = new StringBuilder();
-        //    string indentString = new String(' ', indent);
-        //    jSonString.Append("{");
-        //    foreach (KeyValuePair<string, INode> pair in _collection)
-        //    {
-        //        jSonString.Append(indentString + "  " + pair.Key + " : ");
-        //        pair.Value.Print(indent + 2);
-        //    }
-        //    Console
-        //        .WriteLine(indentString + "}");
-
-        //}
-
     }
 }
