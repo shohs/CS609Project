@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using cs609.data;
+using cs609.utilities;
 
 namespace cs609
 {
@@ -20,6 +21,7 @@ namespace cs609
     {
       string command;
 
+      /*
       CollectionNode root = new CollectionNode();
       CollectionNode sub = new CollectionNode();
       sub.Insert("test", 4);
@@ -34,7 +36,11 @@ namespace cs609
       root.InsertNode("sub", sub);
 
       root.Print(0);
-      
+      */
+
+      INode root = DataReader.ParseJSONString("{ \"test\" : \"value\", \"test2\" : \"value 2\", \"subcollection\" : { \"subkey1\" : \"subval1\" } }");
+      root.Print(0);
+
       do
       {
         Console.Write("cs609 > ");

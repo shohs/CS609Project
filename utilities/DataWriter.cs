@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using cs609.data;
-using Newtonsoft.Json;
 
 namespace cs609.utilities
 {
@@ -45,7 +44,7 @@ namespace cs609.utilities
             try
             {
                 var filePath = @"C:\temp\" + document.StoreName + @"\" + document.Id + ".bin";
-                var json = JsonConvert.SerializeObject(document.Node);
+                var json = ""; // JsonConvert.SerializeObject(document.Node);
                 using (var binWriter =
                     new BinaryWriter(File.Open(filePath, FileMode.Create)))
                 {

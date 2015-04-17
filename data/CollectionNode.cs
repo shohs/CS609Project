@@ -78,6 +78,8 @@ namespace cs609.data
       }
       Console.WriteLine(indentString + "}");
     }
+
+
     public virtual string ToString(int indent)
     {
         var jSonString = new StringBuilder();
