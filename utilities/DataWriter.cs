@@ -9,46 +9,42 @@ namespace cs609.utilities
 {
     public class DataWriter
     {
-        private string _storeName;
+        private string _fileName;
 
-        public DataWriter(string storeName)
+        public DataWriter(string fileName)
         {
-            _storeName = storeName;
+            _fileName = fileName;
         }
 
-   
-        //static string RetrieveData(Document document)
-        //{
-        //    string content;
-        //    var filePath = @"C:\temp\" + document.StoreName + ".dat";
-        //    using (var binReader = new BinaryReader(File.Open(filePath, FileMode.Open)))
-        //    {
-        //        content = binReader.ReadString();
-        //    }
 
-        //    return content;
-
-        //}
+        public string RetrieveData()
+        {
+            string content;
+            var filePath = _fileName + ".dat";
+            using (var reader = new StreamReader(File.Open(filePath, FileMode.Open)))
+            {
+                content = reader.ReadToEnd();
+            }
+            return content;
+        }
         public void CreateDocument(CollectionNode data)
         {
             var document = new Document()
             {
-                StoreName = _storeName,
+                StoreName = _fileName,
                 Node = data
             };
-            //write document contents to file
-            WriteToFile(document);
+            WriteToFile(document.Node.ConvertToJson());
         }
-
-        public void WriteToFile(Document document)
+        public void WriteToFile(string content)
         {
             try
             {
-                var pathString = _storeName + ".dat";
-                using (var binWriter =
+                var pathString = _fileName + ".dat";
+                using (var writer =
                     new StreamWriter(File.Open(pathString, FileMode.Create)))
                     {
-                        binWriter.Write(document.Node.ConvertToJson());
+                        writer.Write(content);
                     }
                 Console.WriteLine("Data Written!");
                 Console.WriteLine();

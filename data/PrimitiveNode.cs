@@ -35,7 +35,7 @@ namespace cs609.data
 
     public virtual string ConvertToJson()
     {
-        return Value.ToString();
+        return "\"" + Value.ToString() + "\"";
     }
   }
 }
