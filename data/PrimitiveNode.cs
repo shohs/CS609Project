@@ -32,5 +32,10 @@ namespace cs609.data
     {
       Console.WriteLine(Value);
     }
+
+    public virtual string ConvertToJson()
+    {
+        return Value.ToString();
+    }
   }
 }

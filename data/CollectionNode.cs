@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -79,6 +80,24 @@ namespace cs609.data
       Console.WriteLine(indentString + "}");
     }
 
+    public virtual string ConvertToJson()
+    {
+        var jSonString = new StringBuilder();
+        jSonString.Append("{");
+        foreach (KeyValuePair<string, INode> pair in _collection)
+        {
+            jSonString.Append("\"");
+            jSonString.Append(pair.Key);
+            jSonString.Append("\" : ");
+            jSonString.Append(pair.Value.ConvertToJson());
+            jSonString.Append( ",");
+        }
+        //I'm not crazy about all of this string manipulation but it works :)
+        var stringvalue = jSonString.ToString();
+        stringvalue = stringvalue.TrimEnd(',');
+        stringvalue += "}";
+        return stringvalue;
+    }
     private IDictionary<string, INode> _collection;
   }
 }

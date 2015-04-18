@@ -11,5 +11,6 @@ namespace cs609.data
     bool Contains(string key);
     INode GetSubNode(string key);
     void Print(int indent);
+    string ConvertToJson();
   }
 }

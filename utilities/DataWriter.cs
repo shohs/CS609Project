@@ -16,12 +16,7 @@ namespace cs609.utilities
             _storeName = storeName;
         }
 
-        public void CreateStore()
-        {
-            var pathString = @"C:\temp\" + _storeName + ".dat";
-            System.IO.Directory.CreateDirectory(pathString);
-        }
-
+   
         //static string RetrieveData(Document document)
         //{
         //    string content;
@@ -49,13 +44,12 @@ namespace cs609.utilities
         {
             try
             {
-
-                var filePath = @"C:\temp\" + _storeName + ".dat";
+                var pathString = _storeName + ".dat";
                 using (var binWriter =
-                    new StreamWriter(File.Open(filePath, FileMode.Create)))
-                {
-                    binWriter.Write(document.Node.ToString());
-                }
+                    new StreamWriter(File.Open(pathString, FileMode.Create)))
+                    {
+                        binWriter.Write(document.Node.ConvertToJson());
+                    }
                 Console.WriteLine("Data Written!");
                 Console.WriteLine();
             }
@@ -63,24 +57,6 @@ namespace cs609.utilities
             {
                 Console.WriteLine("Error: {0}", ioexp.Message);
             }
-
         }
-
-        //public string ToString(int indent)
-        //{
-        //    var jSonString = new StringBuilder();
-        //    string indentString = new String(' ', indent);
-        //    jSonString.Append("{");
-        //    foreach (KeyValuePair<string, INode> pair in _collection)
-        //    {
-        //        jSonString.Append(indentString + "  \"" + pair.Key + "\" : ");
-        //        jSonString.Append("\"" + pair.Value + "\", ");
-        //        jSonString.Append(indent + 2);
-        //    }
-        //    jSonString.Append(indentString + "}");
-        //    return jSonString.ToString();
-        //}
-
-
     }
 }
