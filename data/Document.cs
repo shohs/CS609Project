@@ -8,7 +8,6 @@ namespace cs609.data
 {
     public class Document
     {
-        public Guid Id { get; set; }
         public string StoreName { get; set; }
         public CollectionNode Node { get; set; }
    }

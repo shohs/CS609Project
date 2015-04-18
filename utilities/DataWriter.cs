@@ -3,53 +3,57 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using cs609.data;
-using Newtonsoft.Json;
+
 
 namespace cs609.utilities
 {
     public class DataWriter
     {
-        static void CreateStore(string storeName)
+        private string _storeName;
+
+        public DataWriter(string storeName)
         {
-            var pathString = @"C:\temp\" + storeName;
+            _storeName = storeName;
+        }
+
+        public void CreateStore()
+        {
+            var pathString = @"C:\temp\" + _storeName + ".dat";
             System.IO.Directory.CreateDirectory(pathString);
         }
 
-        static string RetrieveData(Document document)
-        {
-            string content;
-            var filePath = @"C:\temp\" + document.StoreName + @"\" + document.Id + ".bin";
-            using (var binReader = new BinaryReader(File.Open(filePath, FileMode.Open)))
-            {
-                content = binReader.ReadString();
-            }
+        //static string RetrieveData(Document document)
+        //{
+        //    string content;
+        //    var filePath = @"C:\temp\" + document.StoreName + ".dat";
+        //    using (var binReader = new BinaryReader(File.Open(filePath, FileMode.Open)))
+        //    {
+        //        content = binReader.ReadString();
+        //    }
 
-            return content;
+        //    return content;
 
-        }
-        static void CreateDocument(CollectionNode data, string storeName)
+        //}
+        public void CreateDocument(CollectionNode data)
         {
             var document = new Document()
             {
-                Id = Guid.NewGuid(),
-                StoreName = storeName,
+                StoreName = _storeName,
                 Node = data
-
             };
             //write document contents to file
             WriteToFile(document);
         }
 
-        static void WriteToFile(Document document)
+        public void WriteToFile(Document document)
         {
             try
             {
-                var filePath = @"C:\temp\" + document.StoreName + @"\" + document.Id + ".bin";
-                var json = JsonConvert.SerializeObject(document.Node);
+                var filePath = @"C:\temp\" + _storeName + ".dat";
                 using (var binWriter =
-                    new BinaryWriter(File.Open(filePath, FileMode.Create)))
+                    new StreamWriter(File.Open(filePath, FileMode.Create)))
                 {
-                    binWriter.Write(json);
+                    binWriter.Write(document.Node.ToString(5));
                 }
                 Console.WriteLine("Data Written!");
                 Console.WriteLine();
@@ -60,5 +64,22 @@ namespace cs609.utilities
             }
 
         }
+
+        //public string ToString(int indent)
+        //{
+        //    var jSonString = new StringBuilder();
+        //    string indentString = new String(' ', indent);
+        //    jSonString.Append("{");
+        //    foreach (KeyValuePair<string, INode> pair in _collection)
+        //    {
+        //        jSonString.Append(indentString + "  \"" + pair.Key + "\" : ");
+        //        jSonString.Append("\"" + pair.Value + "\", ");
+        //        jSonString.Append(indent + 2);
+        //    }
+        //    jSonString.Append(indentString + "}");
+        //    return jSonString.ToString();
+        //}
+
+
     }
 }
