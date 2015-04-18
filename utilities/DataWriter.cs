@@ -49,11 +49,12 @@ namespace cs609.utilities
         {
             try
             {
+
                 var filePath = @"C:\temp\" + _storeName + ".dat";
                 using (var binWriter =
                     new StreamWriter(File.Open(filePath, FileMode.Create)))
                 {
-                    binWriter.Write(document.Node.ToString(5));
+                    binWriter.Write(document.Node.ToString());
                 }
                 Console.WriteLine("Data Written!");
                 Console.WriteLine();
