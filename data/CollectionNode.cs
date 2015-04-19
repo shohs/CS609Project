@@ -68,6 +68,11 @@ namespace cs609.data
       return _collection[key];
     }
 
+    public virtual IDictionary<string, INode> GetAllSubNodes()
+    {
+      return _collection;
+    }
+
     public virtual void Print(int indent)
     {
       string indentString = new String(' ', indent);

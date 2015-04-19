@@ -28,6 +28,11 @@ namespace cs609.data
       return null;
     }
 
+    public virtual IDictionary<string, INode> GetAllSubNodes()
+    {
+      return null;
+    }
+
     public virtual void Print(int indent)
     {
       Console.WriteLine(Value);

@@ -17,7 +17,21 @@ namespace cs609.query
 
     public virtual INode Execute(INode data)
     {
-      if (data.Contains(_key))
+      if (_key.Equals("*"))
+      {
+        IDictionary<string, INode> subnodes = data.GetAllSubNodes();
+        if (subnodes == null) return null;
+
+        CollectionNode collection = new CollectionNode();
+        if (_subQuery == null) return data;
+
+        foreach (KeyValuePair<string, INode> pair in subnodes)
+        {
+          collection.SetNode(pair.Key, _subQuery.Execute(pair.Value));
+        }
+        return collection;
+      }
+      else if (data.Contains(_key))
       {
         INode subnode = data.GetSubNode(_key);
         if (subnode == null || _subQuery == null) return subnode;

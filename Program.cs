@@ -20,26 +20,43 @@ namespace cs609
 
     static void Main(string[] args)
     {
-      //string command;
+      string command;
 
-      INode root = DataReader.ParseJSONString("{ \"test\" : \"value\", \"test2\" : \"value 2\", \"subcollection\" : { \"subkey1\" : \"subval1\" } }");
+      // INode root = DataReader.ParseJSONString("{ \"test\" : \"value\", \"test2\" : \"value 2\", \"subcollection\" : { \"subkey1\" : \"subval1\" } }");
+      INode root = DataReader.ParseJSONString(
+        "{" +
+          "\"students\" : {" +
+            "\"shohs\" : { \"first\" : \"Steven\", \"last\" : \"Hohs\"}," +
+            "\"jsmith\" : { \"first\" : \"Joe\", \"last\" : \"Smith\"}," +
+            "\"fname\" : { \"first\" : \"Fake\", \"last\" : \"Name\"}," +
+            "\"fname2\" : { \"first\" : \"Fake\", \"last\" : \"Name\"}" +
+          "}," +
+          "\"faculty\" : {" +
+            "\"sbinc\" : { \"first\" : \"ShouldntBe\", \"last\" : \"Included\"}" +
+          "}" +
+        "}"
+      );
       root.Print(0);
 
-      Console.WriteLine("Query result");
-      Query query = QueryParser.ParseQuery("select subcollection.subkey1");
-      query.Execute(root).Print(0);
+      Console.WriteLine("\nQuery result");
+      Query query = QueryParser.ParseQuery("select *.*.first");
+      INode result = query.Execute(root);
+      if (result != null)
+      {
+        result.Print(0);
+      }
 
-      //do
-      //{
-      //  Console.Write("cs609 > ");
-      //  command = Console.ReadLine();
+      do
+      {
+        Console.Write("cs609 > ");
+        command = Console.ReadLine();
         
-      //  if (command.StartsWith("insert"))
-      //  {
+        if (command.StartsWith("insert"))
+        {
 
-      //  }
+        }
 
-      //} while (!command.Equals("exit"));
+      } while (!command.Equals("exit"));
     }
   }
 }
