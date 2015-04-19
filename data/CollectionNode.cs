@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using cs609.utilities;
 
 namespace cs609.data
 {
@@ -95,13 +96,10 @@ namespace cs609.data
             jSonString.Append(pair.Key);
             jSonString.Append("\" : ");
             jSonString.Append(pair.Value.ConvertToJson());
-            jSonString.Append( ",");
+            jSonString.Append(",");
         }
-        //I'm not crazy about all of this string manipulation but it works :)
-        var stringvalue = jSonString.ToString();
-        stringvalue = stringvalue.TrimEnd(',');
-        stringvalue += "}";
-        return stringvalue;
+
+        return JsonTrimmer.TrimTail(jSonString.ToString());
     }
     private IDictionary<string, INode> _collection;
   }

@@ -27,22 +27,7 @@ namespace cs609
                
         }
 
-        public static INode LoadData()
-        {   
-            
-            try
-            {
-                var writer = new DataWriter("cs609.dat");
-                var savedData = DataReader.ParseJSONString(writer.RetrieveData());
-                return savedData;
-            }
-            catch (Exception e)
-            {
-                Console.Write(e.Message);
-                return null;
-            }
-           
-        }
+      
 
         public static void BeginProgram()
         {
@@ -51,7 +36,8 @@ namespace cs609
 
             do
             {
-                var collection =  LoadData();
+                var loader = new DataLoader(databaseName);
+                var collection = loader.LoadDataNodes();
                 Console.Write(databaseName + ">");
                 command = Console.ReadLine();
                 if (command.Equals("print"))
