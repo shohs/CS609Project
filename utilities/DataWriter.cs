@@ -15,29 +15,7 @@ namespace cs609.utilities
         {
             _fileName = fileName;
         }
-
-
-        public string RetrieveData()
-        {
-            try
-            {
-                string content;
-                var filePath = _fileName;
-
-                using (var reader = new StreamReader(File.Open(filePath, FileMode.Open)))
-                {
-                    content = reader.ReadToEnd();
-                }
-                return content;
-            }
-            catch (Exception e)
-            {
-                Console.Write(e.Message);
-                return String.Empty;
-            }
-
-        }
-
+        
         public void CreateDocument(CollectionNode data)
         {
             var document = new Document()
