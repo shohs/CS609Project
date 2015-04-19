@@ -39,7 +39,9 @@ namespace cs609
       root.Print(0);
 
       Console.WriteLine("\nQuery result");
-      Query query = QueryParser.ParseQuery("select *.*.first");
+
+      Query query = new QueryParser("select *.*.first").ParseQuery();
+      
       INode result = query.Execute(root);
       if (result != null)
       {
