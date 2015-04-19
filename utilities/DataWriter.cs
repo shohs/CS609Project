@@ -20,7 +20,7 @@ namespace cs609.utilities
         public string RetrieveData()
         {
             string content;
-            var filePath = _fileName + ".dat";
+            var filePath = _fileName;
             using (var reader = new StreamReader(File.Open(filePath, FileMode.Open)))
             {
                 content = reader.ReadToEnd();
@@ -40,7 +40,7 @@ namespace cs609.utilities
         {
             try
             {
-                var pathString = _fileName + ".dat";
+                var pathString = _fileName;
                 using (var writer =
                     new StreamWriter(File.Open(pathString, FileMode.Create)))
                     {

@@ -52,12 +52,6 @@ namespace cs609
         }
 
       } while (!command.Equals("exit"));
-
-      Console.WriteLine("~>~>~>~>~>~>~>~>~>~>~>~>~>~>~>>~>~");
-      var checker = new Check();
-      checker.Test();
-      checker.LoadData();
-      Console.ReadLine();
     }
   }
 }
