@@ -13,11 +13,6 @@ namespace cs609
   class Program
   {
 
-    static void RecursiveInsert(string location)
-    {
-
-    }
-
     static void Main(string[] args)
     {
       string command;
@@ -40,13 +35,24 @@ namespace cs609
 
       Console.WriteLine("\nQuery result");
 
-      Query query = new QueryParser("select *.*.first").ParseQuery();
-      
+      // IQuery query = new QueryParser("select .*.first").ParseQuery();
+      IQuery query = new QueryParser("insert { \"first\" : \"Joe\", \"last\" : \"Schmoe\" } into students.jschmoe").ParseQuery();
+
       INode result = query.Execute(root);
       if (result != null)
       {
         result.Print(0);
       }
+
+      IQuery query2 = new QueryParser("insert \"test\" into newdata").ParseQuery();
+      query2.Execute(root);
+      if (result != null)
+      {
+        result.Print(0);
+      }
+
+      Console.WriteLine("\nDatabase Contents");
+      root.Print(0);
 
       do
       {

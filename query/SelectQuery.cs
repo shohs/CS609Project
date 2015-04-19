@@ -7,7 +7,7 @@ using cs609.data;
 
 namespace cs609.query
 {
-  public class SelectQuery : Query
+  public class SelectQuery : IQuery
   {
     public SelectQuery(string key, SelectQuery subQuery = null)
     {

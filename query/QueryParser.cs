@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using cs609.data;
+using cs609.utilities;
 
 namespace cs609.query
 {
@@ -14,12 +16,11 @@ namespace cs609.query
       _query = queryString.Trim();
     }
 
-    public Query ParseQuery()
+    public IQuery ParseQuery()
     {
       if (MatchKeyword("select "))
       {
         string collectionList = ParseCollectionList();
-        // collectionList = collectionList.Replace(" ", string.Empty);
         if (collectionList.Length == 0)
         {
           throw new ArgumentException("Select query does not specify a field");
@@ -34,35 +35,33 @@ namespace cs609.query
       }
       else if (MatchKeyword("insert "))
       {
-        return null;
-      }
-      else
-      {
-        return null;
-      }
-      /*
-      string[] keywords = Regex.Split(_query, "\\s+");
+        string argument;
+        argument = ParseJSONString();
 
-      if (keywords[0].ToLower().Equals("select"))
-      {
-        if (keywords.Length < 2) throw new ArgumentException("Select query does not specify a field");
-        string[] keys = keywords[1].Split('.');
-        SelectQuery query = null;
+        if (!MatchKeyword("into "))
+        {
+          throw new ArgumentException("No \"into\" clause provided in insert");
+        }
+
+        string collectionList = ParseCollectionList();
+        if (collectionList.Length == 0)
+        {
+          throw new ArgumentException("Insert query does not specify an insert location");
+        }
+        string[] keys = collectionList.Split('.');
+
+        INode toInsert = DataReader.ParseJSONString(argument);
+        InsertQuery query = null;
         for (int i = keys.Length - 1; i >= 0; i--)
         {
-          query = new SelectQuery(keys[i], query);
+          query = new InsertQuery(toInsert, keys[i], query);
         }
         return query;
       }
-      else if (keywords[0].ToLower().Equals("insert"))
-      {
-        return null;
-      }
       else
       {
         return null;
       }
-      */
     }
 
     private bool MatchKeyword(string keyword)
@@ -77,6 +76,10 @@ namespace cs609.query
 
     private bool CheckKeyword(string keyword)
     {
+      if (position + keyword.Length >= _query.Length)
+      {
+        return false;
+      }
       return _query.Substring(position, keyword.Length).ToLower().Equals(keyword);
     }
 
@@ -102,7 +105,36 @@ namespace cs609.query
 
     private string ParseJSONString()
     {
-      return null;
+      int endPosition;
+      if (_query[position] == '{')
+      {
+        endPosition = position + 1;
+        int braceCount = 1;
+        while (braceCount != 0 && endPosition < _query.Length)
+        {
+          if (_query[endPosition] == '{')
+          {
+            ++braceCount;
+          }
+          else if (_query[endPosition] == '}')
+          {
+            --braceCount;
+          }
+          ++endPosition;
+        }
+      }
+      else
+      {
+        endPosition = position;
+        while (endPosition < _query.Length && (char.IsLetterOrDigit(_query[endPosition]) || _query[endPosition] == '"'))
+        {
+          ++endPosition;
+        }
+      }
+      string result = _query.Substring(position, endPosition - position);
+      position = endPosition;
+      ConsumeWhiteSpace();
+      return result;
     }
 
     private string ParseCollectionList()
@@ -113,6 +145,7 @@ namespace cs609.query
 
       while (!isDone)
       {
+        endPosition = ConsumeWhiteSpace(endPosition);
         while (endPosition < _query.Length && (char.IsLetterOrDigit(_query[endPosition]) || _query[endPosition] == '*'))
         {
           collectionList.Append(_query[endPosition++]);

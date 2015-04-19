@@ -7,7 +7,7 @@ using cs609.data;
 
 namespace cs609.query
 {
-  public interface Query
+  public interface IQuery
   {
     INode Execute(INode data);
   }
