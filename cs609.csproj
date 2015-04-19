@@ -48,6 +48,9 @@
     <Compile Include="data\PrimitiveNode.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="query\Query.cs" />
+    <Compile Include="query\QueryParser.cs" />
+    <Compile Include="query\SelectQuery.cs" />
     <Compile Include="utilities\DataReader.cs" />
     <Compile Include="utilities\DataWriter.cs" />
     <Compile Include="utilities\Logger.cs" />
