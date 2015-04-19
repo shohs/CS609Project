@@ -81,25 +81,42 @@ namespace cs609
             var myEvent = new LogItem()
             {
                 TransactionType = "Insert",
-                Command = "Select CS609.sub",
+                Command = "Insert CS609.sub",
                 StoreName = "CS609",
                 DocumentKey = "sub2",
                 NewValue = "greetings",
                 Committed = false
             };
-
-            //also i would imagine the n number of transactions should be configurable but im setting it manually
-            Logger.TransactionLimit = 20;
-
-            if (Logger.LogTransaction(myEvent))
+            var myEvent1 = new LogItem()
             {
-                Logger.TransactionCount += 1;
-                if (Logger.TransactionCount > Logger.TransactionLimit)
-                {
+                TransactionType = "Update",
+                Command = "Update CS609.sub",
+                StoreName = "CS609",
+                DocumentKey = "sub2",
+                CurrentValue = "greetings",
+                NewValue = "goodbye",
+                Committed = false
+            };
+            var myEvent2 = new LogItem()
+            {
+                TransactionType = "Update",
+                Command = "Update CS609.sub",
+                StoreName = "CS609",
+                DocumentKey = "sub2",
+                CurrentValue = "goodbye",
+                NewValue = "easy cowboy",
+                Committed = false
+            };
 
-                    Logger.WriteToFile(myEvent.StoreName);
-                }
-            }
+            
+            //also i would imagine the n number of transactions should be configurable but im setting it manually
+            Logger.TransactionLimit = 2;
+
+            Logger.LogTransaction(myEvent);
+            Logger.LogTransaction(myEvent1);
+            Logger.LogTransaction(myEvent2);
+
+
 
 
         }

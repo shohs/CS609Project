@@ -4,24 +4,29 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
+using System.Web.Util;
 
 namespace cs609.utilities
 {
     public class Logger
     {
-       public static int TransactionCount { get; set; }
+        public static int TransactionCount = 0;
        public static int TransactionLimit { get; set; }
-       public static List<LogItem> Transactions { get; set; } 
-       public static bool LogTransaction(LogItem dbEvent)
+       public static List<LogItem> Transactions = new List<LogItem>();
+       public static void LogTransaction(LogItem dbEvent)
         {
             try
             { 
                 Transactions.Add(dbEvent);
-                return true;
+                TransactionCount += 1;
+                if (TransactionCount > TransactionLimit)
+                {
+                    WriteToFile(dbEvent.StoreName);
+                }
             }
-            catch (Exception)
+            catch (Exception e)
             {
-               return false;
+                throw new Exception("Could not Log Event:" + e.Message);
             }
         }
 
@@ -35,14 +40,12 @@ namespace cs609.utilities
                 try
                 {
                     transaction.Committed = true;
-                    writer.WriteToFile(serializer.Serialize(transaction));
-
+                    writer.WriteLogToFile(serializer.Serialize(transaction));
                 }
                 catch (Exception e)
                 {
                     transaction.Committed = false;
                 }
-                
             }
 
             Transactions.Clear();

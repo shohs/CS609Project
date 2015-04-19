@@ -46,8 +46,22 @@ namespace cs609.utilities
                     {
                         writer.Write(content);
                     }
-                Console.WriteLine("Data Written!");
-                Console.WriteLine();
+            }
+            catch (IOException ioexp)
+            {
+                Console.WriteLine("Error: {0}", ioexp.Message);
+            }
+        }
+        public void WriteLogToFile(string content)
+        {
+            try
+            {
+                var pathString = _fileName;
+                using (var writer =
+                    new StreamWriter(File.Open(pathString, FileMode.Append)))
+                {
+                    writer.Write(content);
+                }
             }
             catch (IOException ioexp)
             {
