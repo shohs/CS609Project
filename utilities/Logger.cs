@@ -35,18 +35,27 @@ namespace cs609.utilities
             //create a logitem
             var writer = new DataWriter(storeName + ".log");
             JavaScriptSerializer serializer = new JavaScriptSerializer();
+
+            var logString = new StringBuilder();
+            logString.Append("{");
             foreach (var transaction in Transactions)
             {
                 try
                 {
                     transaction.Committed = true;
-                    writer.WriteLogToFile(serializer.Serialize(transaction));
+                    logString.Append("\"");
+                    logString.Append(Guid.NewGuid());
+                    logString.Append("\":");
+                    logString.Append(serializer.Serialize(transaction));
+                    logString.Append(",");
                 }
                 catch (Exception e)
                 {
+                    Console.WriteLine(e.Message);
                     transaction.Committed = false;
                 }
             }
+            writer.WriteToFile(JsonTrimmer.TrimTail(logString.ToString()));
 
             Transactions.Clear();
             TransactionCount = 0;
