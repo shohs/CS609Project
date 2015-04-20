@@ -7,9 +7,9 @@ using cs609.data;
 
 namespace cs609.query
 {
-  public class SelectQuery : IQuery
+  class DeleteQuery : IQuery
   {
-    public SelectQuery(string key, SelectQuery subQuery = null)
+    public DeleteQuery(string key, DeleteQuery subQuery = null)
     {
       _key = key;
       _subQuery = subQuery;
@@ -28,12 +28,18 @@ namespace cs609.query
         IDictionary<string, INode> subnodes = data.GetAllSubNodes();
         if (subnodes == null) return null;
 
+        CollectionNode collection = new CollectionNode();
         if (_subQuery == null && _filters.Count == 0)
         {
-          return data;
+          foreach (KeyValuePair<string, INode> pair in subnodes)
+          {
+            collection.SetNode(pair.Key, pair.Value);
+          }
+          data.DeleteAllSubNodes();
+          return collection;
         }
 
-        CollectionNode collection = new CollectionNode();
+        IList<string> removedKeys = new List<string>();
         foreach (KeyValuePair<string, INode> pair in subnodes)
         {
           bool shouldInclude = true;
@@ -54,28 +60,35 @@ namespace cs609.query
             }
             else
             {
+              removedKeys.Add(pair.Key);
               collection.SetNode(pair.Key, pair.Value);
             }
           }
         }
 
+        foreach (string key in removedKeys)
+        {
+          data.DeleteSubNode(key);
+        }
+
         return collection;
+
       }
       else if (data.Contains(_key))
       {
         INode subnode = data.GetSubNode(_key);
-        if (subnode == null || _subQuery == null) return subnode;
-        // TODO: Make a new collection node
+        if (_subQuery == null)
+        {
+          data.DeleteSubNode(_key);
+          return subnode;
+        }
         return _subQuery.Execute(subnode);
       }
-      else
-      {
-        return null;
-      }
+      return null;
     }
 
     private string _key;
-    private SelectQuery _subQuery;
+    private DeleteQuery _subQuery;
     private IList<IQueryFilter> _filters;
   }
 }

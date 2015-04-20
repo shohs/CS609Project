@@ -21,10 +21,10 @@ namespace cs609
       INode root = DataReader.ParseJSONString(
         "{" +
           "\"students\" : {" +
-            "\"shohs\" : { \"first\" : \"Steven\", \"last\" : \"Hohs\", \"code\" : \"1\"}," +
-            "\"jsmith\" : { \"first\" : \"Joe\", \"last\" : \"Smith\", \"code\" : \"2\"}," +
-            "\"fname\" : { \"first\" : \"Fake\", \"last\" : \"Name\", \"code\" : \"3\"}," +
-            "\"fname2\" : { \"first\" : \"Fake\", \"last\" : \"Name\", \"code\" : \"4\"}" +
+            "\"shohs\"  : { \"first\" : \"Steven\", \"last\" : \"Hohs\",  \"code\" : 1 }," +
+            "\"jsmith\" : { \"first\" : \"Joe\",    \"last\" : \"Smith\", \"code\" : 2 }," +
+            "\"fname\"  : { \"first\" : \"Fake\",   \"last\" : \"Name\",  \"code\" : 3 }," +
+            "\"fname2\" : { \"first\" : \"Fake\",   \"last\" : \"Name\",  \"code\" : 4 }" +
           "}," +
           "\"faculty\" : {" +
             "\"sbinc\" : { \"first\" : \"ShouldntBe\", \"last\" : \"Included\"}" +
@@ -45,21 +45,21 @@ namespace cs609
       }
 
       Console.WriteLine("\nQuery result");
-      IQuery query2 = new QueryParser("select students.* where students.*.last == \"Name\"").ParseQuery();
+      IQuery query2 = new QueryParser("delete students.* where students.*.first < \"George\"").ParseQuery();
       result = query2.Execute(root);
       IQuery query3 = new QueryParser("update students.jschmoe.first value Joel").ParseQuery();
       query3.Execute(root);
 
-      IQuery query3 = new QueryParser("set students.jschmoe.first value Joel").ParseQuery();
-      query3.Execute(root);
+      // query3 = new QueryParser("set students.jschmoe.first value Joel").ParseQuery();
+      // query3.Execute(root);
 
       if (result != null)
       {
         result.Print(0);
       }
 
-      // Console.WriteLine("\nDatabase Contents");
-      // root.Print(0);
+      Console.WriteLine("\nDatabase Contents");
+      root.Print(0);
 
       do
       {

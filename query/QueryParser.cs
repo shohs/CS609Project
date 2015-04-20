@@ -22,40 +22,17 @@ namespace cs609.query
       {
         return ParseSelectQuery();
       }
+      else if (MatchKeyword("delete "))
+      {
+        return ParseDeleteQuery();
+      }
       else if (MatchKeyword("insert "))
       {
         return ParseInsertQuery();
       }
       else if (MatchKeyword("update "))
       {
-        string argument;
-        string collectionList = ParseCollectionList();
-        if (collectionList.Length == 0)
-        {
-          throw new ArgumentException("Update query does not specify a field");
-        }
-        if (!MatchKeyword("value "))
-        {
-          throw new ArgumentException("No \"value\" clause provided in update");
-        }
-        argument = ParseJSONString();
-        string[] keys = collectionList.Split('.');
-        UpdateQuery query = null;
-        INode toUpdate;
-        if (argument.Contains('{'))
-        {
-          toUpdate = DataReader.ParseJSONString(argument);
-        }
-        else
-        {
-          toUpdate = new PrimitiveNode<string>(argument);
-        }
-
-        for (int i = keys.Length - 1; i >= 0; i--)
-        {
-          query = new UpdateQuery(toUpdate, keys[i], query);
-        }
-        return query;
+        return ParseUpdateQuery();
       }
       else
       {
@@ -99,52 +76,10 @@ namespace cs609.query
 
             if (match)
             {
-              whereClauses.Remove(curNode);  
-              string[] collections = new string[val.leftScope.Length - i - 1];
-              for (int j = i + 1; j < val.leftScope.Length; j++)
-              {
-                collections[j - i - 1] = val.leftScope[j];
-              }
-              int intLit;
-              double doubleLit;
+              whereClauses.Remove(curNode);
 
-              object literal = null;
-              if (val.rightLiteral.Contains('"'))
-              {
-                literal = val.rightLiteral.Substring(1, val.rightLiteral.Length - 2);
-              }
-              else if (int.TryParse(val.rightLiteral, out intLit))
-              {
-                literal = intLit;
-              }
-              else if (double.TryParse(val.rightLiteral, out doubleLit))
-              {
-                literal = doubleLit;
-              }
+              query.AddFilter(ParseQueryFilter(val, i));
 
-              switch (val.op)
-              {
-                case "<":
-                  query.AddFilter(new ConstantComparisonFilter(collections, literal, Comparators.LessThan));
-                  break;
-                case "<=":
-                  query.AddFilter(new ConstantComparisonFilter(collections, literal, Comparators.LessThanEq));
-                  break;
-                case ">":
-                  query.AddFilter(new ConstantComparisonFilter(collections, literal, Comparators.GreaterThan));
-                  break;
-                case ">=":
-                  query.AddFilter(new ConstantComparisonFilter(collections, literal, Comparators.GreaterThanEq));
-                  break;
-                case "==":
-                  query.AddFilter(new ConstantComparisonFilter(collections, literal, Comparators.Equal));
-                  break;
-                case "!=":
-                  query.AddFilter(new ConstantComparisonFilter(collections, literal, Comparators.NotEqual));
-                  break;
-                default:
-                  throw new ArgumentException("Invalid operator found in where clause");
-              }
             }
 
             curNode = nextNode;
@@ -160,6 +95,107 @@ namespace cs609.query
       }
 
       return query;
+    }
+
+    private IQuery ParseDeleteQuery()
+    {
+      string collectionList = ParseCollectionList();
+      if (collectionList.Length == 0)
+      {
+        throw new ArgumentException("Delete query does not specify a field");
+      }
+      string[] keys = collectionList.Split('.');
+      DeleteQuery query = null;
+
+      if (MatchKeyword("where "))
+      {
+        // TODO: Support OR clauses
+        // Also, this needs to be refactored
+        LinkedList<Condition> whereClauses = ParseConditions();
+        for (int i = keys.Length - 1; i >= 0; i--)
+        {
+          query = new DeleteQuery(keys[i], query);
+
+          LinkedListNode<Condition> curNode = whereClauses.First, nextNode;
+          bool match = true;
+          while (curNode != null)
+          {
+            nextNode = curNode.Next;
+            Condition val = curNode.Value;
+            for (int j = 0; j <= i; j++)
+            {
+              if (j >= val.leftScope.Length || !val.leftScope[j].Equals(keys[j]))
+              {
+                match = false;
+                break;
+              }
+            }
+
+            if (match)
+            {
+              whereClauses.Remove(curNode);
+              
+              query.AddFilter(ParseQueryFilter(val, i));
+
+            }
+
+            curNode = nextNode;
+          }
+        }
+      }
+      else
+      {
+        for (int i = keys.Length - 1; i >= 0; i--)
+        {
+          query = new DeleteQuery(keys[i], query);
+        }
+      }
+
+      return query;
+    }
+
+    private IQueryFilter ParseQueryFilter(Condition cond, int depth)
+    {
+      IDictionary<string, ComparatorDelegate> comparatorDict = new Dictionary<string, ComparatorDelegate>()
+      {
+        {"<",  Comparators.LessThan},
+        {"<=", Comparators.LessThanEq},
+        {">",  Comparators.GreaterThan},
+        {">=", Comparators.GreaterThanEq},
+        {"==", Comparators.Equal},
+        {"!=", Comparators.NotEqual}
+      };
+
+      string[] collections = new string[cond.leftScope.Length - depth - 1];
+      for (int j = depth + 1; j < cond.leftScope.Length; j++)
+      {
+        collections[j - depth - 1] = cond.leftScope[j];
+      }
+      int intLit;
+      double doubleLit;
+
+      IComparable literal = null;
+      if (cond.rightLiteral.Contains('"'))
+      {
+        literal = cond.rightLiteral.Substring(1, cond.rightLiteral.Length - 2);
+      }
+      else if (int.TryParse(cond.rightLiteral, out intLit))
+      {
+        literal = intLit;
+      }
+      else if (double.TryParse(cond.rightLiteral, out doubleLit))
+      {
+        literal = doubleLit;
+      }
+
+      if (literal != null && comparatorDict.Keys.Contains(cond.op))
+      {
+        return new ConstantComparisonFilter(collections, literal, comparatorDict[cond.op]);
+      }
+      else
+      {
+        throw new ArgumentException("Invalid operation found in where clause");
+      }
     }
 
     private IQuery ParseInsertQuery()
@@ -184,6 +220,38 @@ namespace cs609.query
       for (int i = keys.Length - 1; i >= 0; i--)
       {
         query = new InsertQuery(toInsert, keys[i], query);
+      }
+      return query;
+    }
+
+    private IQuery ParseUpdateQuery()
+    {
+      string argument;
+      string collectionList = ParseCollectionList();
+      if (collectionList.Length == 0)
+      {
+        throw new ArgumentException("Update query does not specify a field");
+      }
+      if (!MatchKeyword("value "))
+      {
+        throw new ArgumentException("No \"value\" clause provided in update");
+      }
+      argument = ParseJSONString();
+      string[] keys = collectionList.Split('.');
+      UpdateQuery query = null;
+      INode toUpdate;
+      if (argument.Contains('{'))
+      {
+        toUpdate = DataReader.ParseJSONString(argument);
+      }
+      else
+      {
+        toUpdate = new PrimitiveNode<string>(argument);
+      }
+
+      for (int i = keys.Length - 1; i >= 0; i--)
+      {
+        query = new UpdateQuery(toUpdate, keys[i], query);
       }
       return query;
     }

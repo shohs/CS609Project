@@ -12,21 +12,21 @@ namespace cs609.query
     bool ShouldInclude(INode node);
   }
 
-  public delegate bool ComparatorDelegate(object left, object right);
+  public delegate bool ComparatorDelegate(IComparable left, IComparable right);
 
   public abstract class Comparators
   {
-    public static readonly ComparatorDelegate LessThan = (left, right) => (double)left < (double)right;
-    public static readonly ComparatorDelegate LessThanEq = (left, right) => (double)left <= (double)right;
-    public static readonly ComparatorDelegate GreaterThan = (left, right) => (double)left > (double)right;
-    public static readonly ComparatorDelegate GreaterThanEq = (left, right) => (double)left >= (double)right;
+    public static readonly ComparatorDelegate LessThan = (left, right) => left.CompareTo(right) < 0;
+    public static readonly ComparatorDelegate LessThanEq = (left, right) => left.CompareTo(right) <= 0;
+    public static readonly ComparatorDelegate GreaterThan = (left, right) => left.CompareTo(right) > 0;
+    public static readonly ComparatorDelegate GreaterThanEq = (left, right) => left.CompareTo(right) >= 0;
     public static readonly ComparatorDelegate Equal = (left, right) => left.Equals(right);
     public static readonly ComparatorDelegate NotEqual = (left, right) => !left.Equals(right);
   }
 
   public class ConstantComparisonFilter : IQueryFilter
   {
-    public ConstantComparisonFilter(string[] subCollections, object compareVal, ComparatorDelegate func)
+    public ConstantComparisonFilter(string[] subCollections, IComparable compareVal, ComparatorDelegate func)
     {
       _subCollections = subCollections;
       _compareVal = compareVal;
@@ -49,13 +49,13 @@ namespace cs609.query
         }
       }
 
-      object value = curNode.GetData();
+      IComparable value = (IComparable)curNode.GetData();
 
       return _func(value, _compareVal);
     }
 
     private string[] _subCollections;
-    private object _compareVal;
+    private IComparable _compareVal;
     private ComparatorDelegate _func;
   }
 

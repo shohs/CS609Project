@@ -28,6 +28,9 @@ namespace cs609.data
       return null;
     }
 
+    public virtual void DeleteSubNode(string key) { }
+    public virtual void DeleteAllSubNodes() { }
+
     public virtual IDictionary<string, INode> GetAllSubNodes()
     {
       return null;

@@ -69,6 +69,16 @@ namespace cs609.data
       return _collection[key];
     }
 
+    public virtual void DeleteSubNode(string key)
+    {
+      _collection.Remove(key);
+    }
+
+    public virtual void DeleteAllSubNodes()
+    {
+      _collection.Clear();
+    }
+
     public virtual IDictionary<string, INode> GetAllSubNodes()
     {
       return _collection;
