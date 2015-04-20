@@ -58,9 +58,7 @@ namespace cs609
 
         private static void ProcessQuery(string command)
         {
-            if()
-
-            Query query = new QueryParser("select *.*.first").ParseQuery();
+            
 
 
         }

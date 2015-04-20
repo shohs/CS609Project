@@ -46,6 +46,13 @@ namespace cs609
 
       IQuery query2 = new QueryParser("insert \"test\" into newdata").ParseQuery();
       query2.Execute(root);
+
+      IQuery query3 = new QueryParser("update students.jschmoe.first value Joel").ParseQuery();
+      query3.Execute(root);
+
+      IQuery query3 = new QueryParser("set students.jschmoe.first value Joel").ParseQuery();
+      query3.Execute(root);
+
       if (result != null)
       {
         result.Print(0);
