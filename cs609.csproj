@@ -46,11 +46,13 @@
   <ItemGroup>
     <Compile Include="data\CollectionNode.cs" />
     <Compile Include="data\Document.cs" />
+    <Compile Include="data\Index.cs" />
     <Compile Include="data\INode.cs" />
     <Compile Include="data\PrimitiveNode.cs" />
     <Compile Include="Interface.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="query\Aggregate.cs" />
     <Compile Include="query\Commands.cs" />
     <Compile Include="query\DeleteQuery.cs" />
     <Compile Include="query\InsertQuery.cs" />
@@ -59,6 +61,7 @@
     <Compile Include="query\Query.cs" />
     <Compile Include="query\QueryParser.cs" />
     <Compile Include="query\SelectQuery.cs" />
+    <Compile Include="query\UnionQuery.cs" />
     <Compile Include="query\UpdateQuery.cs" />
     <Compile Include="utilities\DataLoader.cs" />
     <Compile Include="utilities\JsonTrimmer.cs" />

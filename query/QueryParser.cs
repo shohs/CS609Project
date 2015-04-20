@@ -42,6 +42,35 @@ namespace cs609.query
 
     private Query ParseSelectQuery()
     {
+      AggregateFunction agr = null;
+      bool hasAggregate = false;
+      if (MatchKeyword("min "))
+      {
+        agr = AggregateFunctions.Min;
+        hasAggregate = true;
+      }
+      else if (MatchKeyword("max "))
+      {
+        agr = AggregateFunctions.Max;
+        hasAggregate = true;
+      }
+      else if (MatchKeyword("sum "))
+      {
+        agr = AggregateFunctions.Sum;
+        hasAggregate = true;
+      }
+      else if (MatchKeyword("count "))
+      {
+        agr = AggregateFunctions.Count;
+        hasAggregate = true;
+      }
+      else if (MatchKeyword("average "))
+      {
+        agr = AggregateFunctions.Average;
+        hasAggregate = true;
+      }
+
+
       string collectionList = ParseCollectionList();
       if (collectionList.Length == 0)
       {
@@ -94,9 +123,12 @@ namespace cs609.query
         }
           query.Keys = collectionList;
           query.CommandType = Commands.Select;
-        return query;
       }
 
+      if (hasAggregate)
+      {
+        return new Aggregate(query, agr);
+      }
       return query;
     }
 

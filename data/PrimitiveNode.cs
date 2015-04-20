@@ -48,7 +48,11 @@ namespace cs609.data
 
     public virtual string ConvertToJson()
     {
+      if (Value.GetType() == typeof(string))
+      {
         return "\"" + Value.ToString() + "\"";
+      }
+      return Value.ToString();
     }
   }
 }

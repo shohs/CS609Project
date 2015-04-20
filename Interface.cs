@@ -32,7 +32,7 @@ namespace cs609
                 {
                     case "print":
                     case "1":
-                        _collection.Print(5);
+                        _collection.Print(0);
                         break;
                     case "checkpoint":
                     case "2":
@@ -62,23 +62,29 @@ namespace cs609
                         break;
                    
                     default:
-                        ProcessQuery();
+                        INode result = ProcessQuery();
+                        if (result != null)
+                        {
+                            result.Print(0);
+                        }
                         break;
                 }
 
             } while (!_command.Equals("exit"));
         }
 
-        private void ProcessQuery()
+        private INode ProcessQuery()
         {
             try
             {
                 var query = new QueryParser(_command).ParseQuery();
-                query.Execute(_collection);
+                INode result = query.Execute(_collection);
+                return result;
             }
             catch (Exception e)
             {
                 Console.Write(e);
+                return null;
             }
         }
     }

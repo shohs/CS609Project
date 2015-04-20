@@ -23,7 +23,7 @@ namespace cs609.utilities
                 var savedData = DataReader.ParseJSONString(RetrieveRawData());
                 return savedData;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 //Console.Write(e.Message);
                 return null;
