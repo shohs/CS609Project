@@ -58,6 +58,37 @@ namespace cs609.query
         }
         return query;
       }
+      else if (MatchKeyword("update "))
+      {
+          string argument;
+          string collectionList = ParseCollectionList();
+          if (collectionList.Length == 0)
+          {
+              throw new ArgumentException("Update query does not specify a field");
+          }
+          if (!MatchKeyword("value "))
+          {
+              throw new ArgumentException("No \"value\" clause provided in update");
+          }
+          argument = ParseJSONString();
+          string[] keys = collectionList.Split('.');
+          UpdateQuery query = null;
+          INode toUpdate;
+          if (argument.Contains('{'))
+          {
+             toUpdate = DataReader.ParseJSONString(argument);
+          }
+          else
+          {
+              toUpdate = new PrimitiveNode<string>(argument);
+          }
+          
+          for (int i = keys.Length - 1; i >= 0; i--)
+          {
+              query = new UpdateQuery(toUpdate, keys[i], query);
+          }
+          return query;
+      }
       else
       {
         return null;

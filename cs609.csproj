@@ -55,6 +55,8 @@
     <Compile Include="query\IQuery.cs" />
     <Compile Include="query\QueryParser.cs" />
     <Compile Include="query\SelectQuery.cs" />
+    <Compile Include="query\SetQuery.cs" />
+    <Compile Include="query\UpdateQuery.cs" />
     <Compile Include="utilities\DataLoader.cs" />
     <Compile Include="utilities\JsonTrimmer.cs" />
     <Compile Include="utilities\DataReader.cs" />
