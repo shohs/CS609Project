@@ -33,6 +33,11 @@ namespace cs609.data
       return null;
     }
 
+    public virtual object GetData()
+    {
+      return Value;
+    }
+
     public virtual void Print(int indent)
     {
       Console.WriteLine(Value);

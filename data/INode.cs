@@ -11,6 +11,7 @@ namespace cs609.data
     bool Contains(string key);
     INode GetSubNode(string key);
     IDictionary<string, INode> GetAllSubNodes();
+    object GetData();
     void Print(int indent);
     string ConvertToJson();
   }

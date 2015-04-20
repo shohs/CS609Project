@@ -20,48 +20,141 @@ namespace cs609.query
     {
       if (MatchKeyword("select "))
       {
-        string collectionList = ParseCollectionList();
-        if (collectionList.Length == 0)
-        {
-          throw new ArgumentException("Select query does not specify a field");
-        }
-        string[] keys = collectionList.Split('.');
-        SelectQuery query = null;
-        for (int i = keys.Length - 1; i >= 0; i--)
-        {
-          query = new SelectQuery(keys[i], query);
-        }
-        return query;
+        return ParseSelectQuery();
       }
       else if (MatchKeyword("insert "))
       {
-        string argument;
-        argument = ParseJSONString();
-
-        if (!MatchKeyword("into "))
-        {
-          throw new ArgumentException("No \"into\" clause provided in insert");
-        }
-
-        string collectionList = ParseCollectionList();
-        if (collectionList.Length == 0)
-        {
-          throw new ArgumentException("Insert query does not specify an insert location");
-        }
-        string[] keys = collectionList.Split('.');
-
-        INode toInsert = DataReader.ParseJSONString(argument);
-        InsertQuery query = null;
-        for (int i = keys.Length - 1; i >= 0; i--)
-        {
-          query = new InsertQuery(toInsert, keys[i], query);
-        }
-        return query;
+        return ParseInsertQuery();
       }
       else
       {
         return null;
       }
+    }
+
+    private IQuery ParseSelectQuery()
+    {
+      string collectionList = ParseCollectionList();
+      if (collectionList.Length == 0)
+      {
+        throw new ArgumentException("Select query does not specify a field");
+      }
+      string[] keys = collectionList.Split('.');
+      SelectQuery query = null;
+
+      if (MatchKeyword("where "))
+      {
+        // TODO: Support OR clauses
+        // Also, this needs to be refactored
+        LinkedList<Condition> whereClauses = ParseConditions();
+        for (int i = keys.Length - 1; i >= 0; i--)
+        {
+          query = new SelectQuery(keys[i], query);
+
+          LinkedListNode<Condition> curNode = whereClauses.First, nextNode;
+          bool match = true;
+          while (curNode != null)
+          {
+            nextNode = curNode.Next;
+            Condition val = curNode.Value;
+            for (int j = 0; j <= i; j++)
+            {
+              if (j >= val.leftScope.Length || !val.leftScope[j].Equals(keys[j]))
+              {
+                match = false;
+                break;
+              }
+            }
+
+            if (match)
+            {
+              whereClauses.Remove(curNode);  
+              string[] collections = new string[val.leftScope.Length - i - 1];
+              for (int j = i + 1; j < val.leftScope.Length; j++)
+              {
+                collections[j - i - 1] = val.leftScope[j];
+              }
+              int intLit;
+              double doubleLit;
+
+              object literal = null;
+              if (val.rightLiteral.Contains('"'))
+              {
+                literal = val.rightLiteral.Substring(1, val.rightLiteral.Length - 2);
+              }
+              else if (int.TryParse(val.rightLiteral, out intLit))
+              {
+                literal = intLit;
+              }
+              else if (double.TryParse(val.rightLiteral, out doubleLit))
+              {
+                literal = doubleLit;
+              }
+
+              switch (val.op)
+              {
+                case "<":
+                  query.AddFilter(new ConstantComparisonFilter(collections, literal, Comparators.LessThan));
+                  break;
+                case "<=":
+                  query.AddFilter(new ConstantComparisonFilter(collections, literal, Comparators.LessThanEq));
+                  break;
+                case ">":
+                  query.AddFilter(new ConstantComparisonFilter(collections, literal, Comparators.GreaterThan));
+                  break;
+                case ">=":
+                  query.AddFilter(new ConstantComparisonFilter(collections, literal, Comparators.GreaterThanEq));
+                  break;
+                case "==":
+                  query.AddFilter(new ConstantComparisonFilter(collections, literal, Comparators.Equal));
+                  break;
+                case "!=":
+                  query.AddFilter(new ConstantComparisonFilter(collections, literal, Comparators.NotEqual));
+                  break;
+                default:
+                  throw new ArgumentException("Invalid operator found in where clause");
+              }
+            }
+
+            curNode = nextNode;
+          }
+        }
+      }
+      else
+      {
+        for (int i = keys.Length - 1; i >= 0; i--)
+        {
+          query = new SelectQuery(keys[i], query);
+        }
+      }
+
+      return query;
+    }
+
+    private IQuery ParseInsertQuery()
+    {
+      string argument;
+      argument = ParseJSONString();
+
+      if (!MatchKeyword("into "))
+      {
+        throw new ArgumentException("No \"into\" clause provided in insert");
+      }
+
+      string collectionList = ParseCollectionList();
+      if (collectionList.Length == 0)
+      {
+        throw new ArgumentException("Insert query does not specify an insert location");
+      }
+      string[] keys = collectionList.Split('.');
+
+      INode toInsert = DataReader.ParseJSONString(argument);
+      InsertQuery query = null;
+      for (int i = keys.Length - 1; i >= 0; i--)
+      {
+        query = new InsertQuery(toInsert, keys[i], query);
+      }
+      return query;
     }
 
     private bool MatchKeyword(string keyword)
@@ -81,6 +174,20 @@ namespace cs609.query
         return false;
       }
       return _query.Substring(position, keyword.Length).ToLower().Equals(keyword);
+    }
+
+    private string NextKeyword()
+    {
+      StringBuilder keyword = new StringBuilder();
+
+      while (position < _query.Length && !char.IsWhiteSpace(_query[position]))
+      {
+        keyword.Append(_query[position]);
+        ++position;
+      }
+
+      ConsumeWhiteSpace();
+      return keyword.ToString();
     }
 
     private void AdvanceCursor(int characters)
@@ -137,6 +244,17 @@ namespace cs609.query
       return result;
     }
 
+    private string ParseLiteral()
+    {
+      StringBuilder literal = new StringBuilder();
+      while (position < _query.Length && (char.IsLetterOrDigit(_query[position]) || _query[position] == '"'))
+      {
+        literal.Append(_query[position++]);
+      }
+      ConsumeWhiteSpace();
+      return literal.ToString();
+    }
+
     private string ParseCollectionList()
     {
       StringBuilder collectionList = new StringBuilder();
@@ -164,6 +282,41 @@ namespace cs609.query
 
       position = endPosition;
       return collectionList.ToString();
+    }
+
+    private class Condition
+    {
+      public string[] leftScope;
+      public string op;
+      public string rightLiteral;
+    }
+    LinkedList<Condition> ParseConditions()
+    {
+      LinkedList<Condition> clist = new LinkedList<Condition>();
+
+      do
+      {
+        Condition c = new Condition();
+        c.leftScope = ParseCollectionList().Split('.');
+        c.op = ParseOperator();
+        c.rightLiteral = ParseLiteral();
+        clist.AddLast(c);
+      }
+      while (NextKeyword().ToLower().Equals("and"));
+
+      return clist;
+    }
+
+    private string ParseOperator()
+    {
+      StringBuilder op = new StringBuilder();
+      op.Append(_query[position++]);
+      if ("<>=!".Contains(_query[position]))
+      {
+        op.Append(_query[position++]);
+      }
+      ConsumeWhiteSpace();
+      return op.ToString();
     }
 
     private string _query;

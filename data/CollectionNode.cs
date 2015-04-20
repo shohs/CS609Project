@@ -74,6 +74,11 @@ namespace cs609.data
       return _collection;
     }
 
+    public virtual object GetData()
+    {
+      return null;
+    }
+
     public virtual void Print(int indent)
     {
       string indentString = new String(' ', indent);
