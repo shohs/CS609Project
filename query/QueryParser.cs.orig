@@ -40,7 +40,7 @@ namespace cs609.query
       }
     }
 
-    private Query ParseSelectQuery()
+    private IQuery ParseSelectQuery()
     {
       string collectionList = ParseCollectionList();
       if (collectionList.Length == 0)
@@ -92,15 +92,18 @@ namespace cs609.query
         {
           query = new SelectQuery(keys[i], query);
         }
+<<<<<<< HEAD
           query.Keys = collectionList;
           query.CommandType = Commands.Select;
         return query;
+=======
+>>>>>>> 626d08d4a2abfe63d75250b46cc0fdc89089b6eb
       }
 
       return query;
     }
 
-    private Query ParseDeleteQuery()
+    private IQuery ParseDeleteQuery()
     {
       string collectionList = ParseCollectionList();
       if (collectionList.Length == 0)
@@ -152,9 +155,13 @@ namespace cs609.query
         {
           query = new DeleteQuery(keys[i], query);
         }
-          query.CommandType = Commands.Delete;
+<<<<<<< HEAD
+          query.CommandType = Commands.Insert;
           query.Keys = collectionList;
+          query.NewValue = toInsert.ConvertToJson();
         return query;
+=======
+>>>>>>> 626d08d4a2abfe63d75250b46cc0fdc89089b6eb
       }
 
       return query;
@@ -162,8 +169,32 @@ namespace cs609.query
 
     private IQueryFilter ParseQueryFilter(Condition cond, int depth)
     {
-        IDictionary<string, ComparatorDelegate> comparatorDict = new Dictionary<string, ComparatorDelegate>()
+      IDictionary<string, ComparatorDelegate> comparatorDict = new Dictionary<string, ComparatorDelegate>()
       {
+<<<<<<< HEAD
+          string collectionList = ParseCollectionList();
+          if (collectionList.Length == 0)
+          {
+              throw new ArgumentException("Update query does not specify a field");
+          }
+          if (!MatchKeyword("value "))
+          {
+              throw new ArgumentException("No \"value\" clause provided in update");
+          }
+          var argument = ParseJSONString();
+          string[] keys = collectionList.Split('.');
+          UpdateQuery query = null;
+          var toUpdate = argument.Contains('{') ? DataReader.ParseJSONString(argument) : new PrimitiveNode<string>(argument);
+          
+          for (int i = keys.Length - 1; i >= 0; i--)
+          {
+              query = new UpdateQuery(toUpdate, keys[i], query);
+          }
+          query.CommandType = Commands.Update;
+          query.Keys = collectionList;
+          query.NewValue = toUpdate.ConvertToJson();
+          return query;
+=======
         {"<",  Comparators.LessThan},
         {"<=", Comparators.LessThanEq},
         {">",  Comparators.GreaterThan},
@@ -172,39 +203,40 @@ namespace cs609.query
         {"!=", Comparators.NotEqual}
       };
 
-        string[] collections = new string[cond.leftScope.Length - depth - 1];
-        for (int j = depth + 1; j < cond.leftScope.Length; j++)
-        {
-            collections[j - depth - 1] = cond.leftScope[j];
-        }
-        int intLit;
-        double doubleLit;
+      string[] collections = new string[cond.leftScope.Length - depth - 1];
+      for (int j = depth + 1; j < cond.leftScope.Length; j++)
+      {
+        collections[j - depth - 1] = cond.leftScope[j];
+      }
+      int intLit;
+      double doubleLit;
 
-        IComparable literal = null;
-        if (cond.rightLiteral.Contains('"'))
-        {
-            literal = cond.rightLiteral.Substring(1, cond.rightLiteral.Length - 2);
-        }
-        else if (int.TryParse(cond.rightLiteral, out intLit))
-        {
-            literal = intLit;
-        }
-        else if (double.TryParse(cond.rightLiteral, out doubleLit))
-        {
-            literal = doubleLit;
-        }
+      IComparable literal = null;
+      if (cond.rightLiteral.Contains('"'))
+      {
+        literal = cond.rightLiteral.Substring(1, cond.rightLiteral.Length - 2);
+      }
+      else if (int.TryParse(cond.rightLiteral, out intLit))
+      {
+        literal = intLit;
+      }
+      else if (double.TryParse(cond.rightLiteral, out doubleLit))
+      {
+        literal = doubleLit;
+      }
 
-        if (literal != null && comparatorDict.Keys.Contains(cond.op))
-        {
-            return new ConstantComparisonFilter(collections, literal, comparatorDict[cond.op]);
-        }
-        else
-        {
-            throw new ArgumentException("Invalid operation found in where clause");
-        }
+      if (literal != null && comparatorDict.Keys.Contains(cond.op))
+      {
+        return new ConstantComparisonFilter(collections, literal, comparatorDict[cond.op]);
+>>>>>>> 626d08d4a2abfe63d75250b46cc0fdc89089b6eb
+      }
+      else
+      {
+        throw new ArgumentException("Invalid operation found in where clause");
+      }
     }
 
-    private Query ParseInsertQuery()
+    private IQuery ParseInsertQuery()
     {
       string argument;
       argument = ParseJSONString();
@@ -230,7 +262,7 @@ namespace cs609.query
       return query;
     }
 
-    private Query ParseUpdateQuery()
+    private IQuery ParseUpdateQuery()
     {
       string argument;
       string collectionList = ParseCollectionList();

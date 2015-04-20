@@ -7,7 +7,7 @@ using cs609.data;
 
 namespace cs609.query
 {
-  class DeleteQuery : IQuery
+  class DeleteQuery : Query
   {
     public DeleteQuery(string key, DeleteQuery subQuery = null)
     {
@@ -21,7 +21,7 @@ namespace cs609.query
       _filters.Add(filter);
     }
 
-    public virtual INode Execute(INode data)
+    public override INode Execute(INode data)
     {
       if (_key.Equals("*") || _filters.Count != 0)
       {
