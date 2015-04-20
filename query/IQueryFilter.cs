@@ -59,6 +59,36 @@ namespace cs609.query
     private ComparatorDelegate _func;
   }
 
+  public class ExistsFilter : IQueryFilter
+  {
+    public ExistsFilter(string[] subCollections, bool invert)
+    {
+      _subCollections = subCollections;
+      _invert = invert;
+    }
+
+    public virtual bool ShouldInclude(INode node)
+    {
+      INode curNode = node;
+
+      foreach (string key in _subCollections)
+      {
+        if (curNode.Contains(key))
+        {
+          curNode = curNode.GetSubNode(key);
+        }
+        else
+        {
+          return false ^ _invert;
+        }
+      }
+      return true ^ _invert;
+    }
+
+    private string[] _subCollections;
+    private bool _invert;
+  }
+
   public class FieldComparisonFilter : IQueryFilter
   {
     public virtual bool ShouldInclude(INode node)

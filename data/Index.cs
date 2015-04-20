@@ -8,5 +8,11 @@ namespace cs609.data
 {
   class Index
   {
+    public static Index CreateIndex(INode root, string field)
+    {
+      return null;
+    }
+
+    // private tree;
   }
 }
