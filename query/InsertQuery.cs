@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using cs609.data;
+using cs609.utilities;
 
 namespace cs609.query
 {
-  public class InsertQuery : IQuery
+  public class InsertQuery : Query
   {
     public InsertQuery(INode toInsert, string key, InsertQuery subQuery = null)
     {
@@ -16,7 +17,7 @@ namespace cs609.query
       _subQuery = subQuery;
     }
 
-    public virtual INode Execute(INode data)
+    public override INode Execute(INode data)
     {
       if (data.Contains(_key))
       {
@@ -48,6 +49,17 @@ namespace cs609.query
         else
         {
           cNode.InsertNode(_key, _toInsert);
+          var item = new LogItem()
+          {
+              TransactionType = CommandType,
+              StoreName = "cs609",
+              DocumentKey = _key,
+              NewValue = _toInsert.ConvertToJson(),
+              CurrentValue = string.Empty,
+              Committed = false,
+              DateCreated = DateTime.Now
+          };
+          Logger.LogTransaction(item);
           return _toInsert;
         }
       }

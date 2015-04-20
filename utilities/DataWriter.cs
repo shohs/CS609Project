@@ -30,9 +30,7 @@ namespace cs609.utilities
         {
             try
             {
-
-                var writer = GetWriter();
-                using (writer)
+                using (var writer = new StreamWriter(File.Open(_fileName, FileMode.Create)))
                 {
                     writer.Write(content);
                 }
@@ -42,23 +40,6 @@ namespace cs609.utilities
                 Console.WriteLine("Error: {0}", ioexp.Message);
             }
         }
-        public StreamWriter GetWriter()
-        {
-            StreamWriter writer;
-            var type = _fileName.Substring(_fileName.LastIndexOf('.') + 1);
-            switch (type)
-            {
-                case "log":
-                    writer = new StreamWriter(File.Open(_fileName, FileMode.Append));
-                    break;
-                case "dat":
-                    writer = new StreamWriter(File.Open(_fileName, FileMode.Open));
-                    break;
-                default:
-                    writer = new StreamWriter(File.Open(_fileName, FileMode.Open));
-                    break;
-            }
-            return writer;
-        }
+      
 }
 }

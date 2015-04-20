@@ -12,57 +12,67 @@ namespace cs609
 {
     public class Interface
     {
-        public static void main()
+        private string _command;
+        private const string DatabaseName = "cs609";
+        private DataLoader _loader;
+        private INode _collection;
+        public void Start()
         {
-            string command;
-            string databaseName = "cs609";
-            var loader = new DataLoader(databaseName + ".dat");
-            var collection = loader.LoadDataNodes();
+            _loader = new DataLoader(DatabaseName + ".dat");
+            _collection = _loader.LoadDataNodes();
+            Logger.TransactionLimit = 2;
 
             //if time we can implement a choice of databases
             do
             {
-                Console.Write(databaseName + " > ");
-                command = Console.ReadLine();
+                Console.Write(DatabaseName + " > ");
+                _command = Console.ReadLine();
 
-                switch (command.ToLower())
+                switch (_command.ToLower())
                 {
                     case "print":
-                        collection.Print(5);
+                        _collection.Print(5);
                         break;
                     case "get":
                          Console.Write("Which item would you like to retrieve?");
                     var key = Console.ReadLine();
-                    var result = collection.GetSubNode(key);
+                    var result = _collection.GetSubNode(key);
                     result.Print(2);
                         break;
+                    case "checkpoint":
+                        Logger.WriteToFile(DatabaseName);
+                        break;
                     case "exit":
+                        Logger.WriteToFile(DatabaseName);
                         break;
                     case "help":
                     case "?":
                         Console.WriteLine("You may enter the following Commands:");
                         Console.WriteLine("print - prints a formatted view of all data");
-                        Console.WriteLine("get - this is a dummy command for now");
+                        Console.WriteLine("checkpoint - creates a checkpoint and forces the log to write to disk");
                         Console.WriteLine("exit - this ends the program");
                         Console.WriteLine("help - displays a list of commands");
                         Console.WriteLine("You may also query the database.");
                         break;
                     default:
-                        ProcessQuery(command);
-
+                        ProcessQuery();
                         break;
                 }
 
-            } while (!command.Equals("exit"));
+            } while (!_command.Equals("exit"));
         }
 
-        private static void ProcessQuery(string command)
+        private void ProcessQuery()
         {
-            
-
-
+            try
+            {
+                var query = new QueryParser(_command).ParseQuery();
+                query.Execute(_collection);
+            }
+            catch (Exception e)
+            {
+                Console.Write(e);
+            }
         }
-
-
     }
 }

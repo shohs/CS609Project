@@ -16,7 +16,7 @@ namespace cs609.query
       _query = queryString.Trim();
     }
 
-    public IQuery ParseQuery()
+    public Query ParseQuery()
     {
       if (MatchKeyword("select "))
       {
@@ -31,6 +31,8 @@ namespace cs609.query
         {
           query = new SelectQuery(keys[i], query);
         }
+          query.Keys = collectionList;
+          query.CommandType = Commands.Select;
         return query;
       }
       else if (MatchKeyword("insert "))
@@ -56,11 +58,13 @@ namespace cs609.query
         {
           query = new InsertQuery(toInsert, keys[i], query);
         }
+          query.CommandType = Commands.Insert;
+          query.Keys = collectionList;
+          query.NewValue = toInsert.ConvertToJson();
         return query;
       }
       else if (MatchKeyword("update "))
       {
-          string argument;
           string collectionList = ParseCollectionList();
           if (collectionList.Length == 0)
           {
@@ -70,23 +74,18 @@ namespace cs609.query
           {
               throw new ArgumentException("No \"value\" clause provided in update");
           }
-          argument = ParseJSONString();
+          var argument = ParseJSONString();
           string[] keys = collectionList.Split('.');
           UpdateQuery query = null;
-          INode toUpdate;
-          if (argument.Contains('{'))
-          {
-             toUpdate = DataReader.ParseJSONString(argument);
-          }
-          else
-          {
-              toUpdate = new PrimitiveNode<string>(argument);
-          }
+          var toUpdate = argument.Contains('{') ? DataReader.ParseJSONString(argument) : new PrimitiveNode<string>(argument);
           
           for (int i = keys.Length - 1; i >= 0; i--)
           {
               query = new UpdateQuery(toUpdate, keys[i], query);
           }
+          query.CommandType = Commands.Update;
+          query.Keys = collectionList;
+          query.NewValue = toUpdate.ConvertToJson();
           return query;
       }
       else

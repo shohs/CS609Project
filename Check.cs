@@ -1,5 +1,6 @@
 ﻿using System;
 using cs609.data;
+using cs609.query;
 using cs609.utilities;
 
 namespace cs609
@@ -61,8 +62,8 @@ namespace cs609
             //This info comes from user when they issue a command but i dont know what thats going to look like yet
             var myEvent = new LogItem()
             {
-                TransactionType = "Insert",
-                Command = "Insert CS609.sub",
+                TransactionType = Commands.Insert,
+                //Command = "Insert CS609.sub",
                 StoreName = "CS609",
                 DocumentKey = "sub2",
                 NewValue = "greetings",
@@ -70,8 +71,8 @@ namespace cs609
             };
             var myEvent1 = new LogItem()
             {
-                TransactionType = "Update",
-                Command = "Update CS609.sub",
+                TransactionType = Commands.Update,
+                //Command = "Update CS609.sub",
                 StoreName = "CS609",
                 DocumentKey = "sub2",
                 CurrentValue = "greetings",
@@ -80,8 +81,8 @@ namespace cs609
             };
             var myEvent2 = new LogItem()
             {
-                TransactionType = "Update",
-                Command = "Update CS609.sub",
+                TransactionType = Commands.Update,
+                //Command = "Update CS609.sub",
                 StoreName = "CS609",
                 DocumentKey = "sub2",
                 CurrentValue = "goodbye",
@@ -96,10 +97,6 @@ namespace cs609
             Logger.LogTransaction(myEvent);
             Logger.LogTransaction(myEvent1);
             Logger.LogTransaction(myEvent2);
-
-
-
-
         }
     }
 

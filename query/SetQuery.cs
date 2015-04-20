@@ -4,20 +4,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using cs609.data;
-using cs609.utilities;
 
 namespace cs609.query
 {
-    public class UpdateQuery : Query
+    public class SetQuery : IQuery
     {
-        public UpdateQuery(INode toUpdate, string key, UpdateQuery subQuery = null)
+        public SetQuery(INode toSet, string key, SetQuery subQuery = null)
         {
-            _toUpdate = toUpdate;
+            _toSet = toSet;
             _key = key;
             _subQuery = subQuery;
         }
 
-        public override INode Execute(INode data)
+        public virtual INode Execute(INode data)
         {
             if (data.Contains(_key))
             {
@@ -38,30 +37,37 @@ namespace cs609.query
                     }
                     else
                     {
-                        cNode.UpdateNode(_key, _toUpdate);
-                        var item = new LogItem()
-                        {
-                            TransactionType = CommandType,
-                            StoreName = "cs609",
-                            DocumentKey = _key,
-                            NewValue = _toUpdate.ConvertToJson(),
-                            CurrentValue = cNode.GetSubNode(_key).ConvertToJson(),
-                            Committed = false,
-                            DateCreated =  DateTime.Now
-                        };
-                        Logger.LogTransaction(item);
-                        return _toUpdate;
+                        cNode.UpdateNode(_key, _toSet);
+                        return _toSet;
                     }
                 }
             }
             else
             {
-                throw new ArgumentException("Can not locate key");
+                if (data.GetType() != typeof(CollectionNode))
+                {
+                    throw new ArgumentException("Attempting to insert into a primitive node");
+                }
+
+                CollectionNode cNode = (CollectionNode)data;
+
+                // Create a new node
+                if (_subQuery != null)
+                {
+                    INode sub = new CollectionNode();
+                    cNode.InsertNode(_key, sub);
+                    return _subQuery.Execute(sub);
+                }
+                else
+                {
+                    cNode.InsertNode(_key, _toSet);
+                    return _toSet;
+                }
             }
         }
 
         string _key;
-        INode _toUpdate;
-        UpdateQuery _subQuery;
+        INode _toSet;
+        SetQuery _subQuery;
     }
 }

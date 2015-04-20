@@ -7,7 +7,7 @@ using cs609.data;
 
 namespace cs609.query
 {
-  public class SelectQuery : IQuery
+  public class SelectQuery : Query 
   {
     public SelectQuery(string key, SelectQuery subQuery = null)
     {
@@ -15,7 +15,7 @@ namespace cs609.query
       _subQuery = subQuery;
     }
 
-    public virtual INode Execute(INode data)
+    public override INode Execute(INode data)
     {
       if (_key.Equals("*"))
       {
