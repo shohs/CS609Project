@@ -21,10 +21,10 @@ namespace cs609
       INode root = DataReader.ParseJSONString(
         "{" +
           "\"students\" : {" +
-            "\"shohs\" : { \"first\" : \"Steven\", \"last\" : \"Hohs\"}," +
-            "\"jsmith\" : { \"first\" : \"Joe\", \"last\" : \"Smith\"}," +
-            "\"fname\" : { \"first\" : \"Fake\", \"last\" : \"Name\"}," +
-            "\"fname2\" : { \"first\" : \"Fake\", \"last\" : \"Name\"}" +
+            "\"shohs\"  : { \"first\" : \"Steven\", \"last\" : \"Hohs\",  \"code\" : 1 }," +
+            "\"jsmith\" : { \"first\" : \"Joe\",    \"last\" : \"Smith\", \"code\" : 2 }," +
+            "\"fname\"  : { \"first\" : \"Fake\",   \"last\" : \"Name\",  \"code\" : 3 }," +
+            "\"fname2\" : { \"first\" : \"Fake\",   \"last\" : \"Name\",  \"code\" : 4 }" +
           "}," +
           "\"faculty\" : {" +
             "\"sbinc\" : { \"first\" : \"ShouldntBe\", \"last\" : \"Included\"}" +
@@ -35,7 +35,7 @@ namespace cs609
 
       Console.WriteLine("\nQuery result");
 
-      // IQuery query = new QueryParser("select .*.first").ParseQuery();
+      // IQuery query = new QueryParser("select *.*.first").ParseQuery();
       IQuery query = new QueryParser("insert { \"first\" : \"Joe\", \"last\" : \"Schmoe\" } into students.jschmoe").ParseQuery();
 
       INode result = query.Execute(root);
@@ -44,14 +44,14 @@ namespace cs609
         result.Print(0);
       }
 
-      IQuery query2 = new QueryParser("insert \"test\" into newdata").ParseQuery();
-      query2.Execute(root);
-
+      Console.WriteLine("\nQuery result");
+      IQuery query2 = new QueryParser("delete students.* where students.*.first < \"George\"").ParseQuery();
+      result = query2.Execute(root);
       IQuery query3 = new QueryParser("update students.jschmoe.first value Joel").ParseQuery();
       query3.Execute(root);
 
-      IQuery query3 = new QueryParser("set students.jschmoe.first value Joel").ParseQuery();
-      query3.Execute(root);
+      // query3 = new QueryParser("set students.jschmoe.first value Joel").ParseQuery();
+      // query3.Execute(root);
 
       if (result != null)
       {

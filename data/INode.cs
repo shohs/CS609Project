@@ -10,7 +10,10 @@ namespace cs609.data
   {
     bool Contains(string key);
     INode GetSubNode(string key);
+    void DeleteSubNode(string key);
+    void DeleteAllSubNodes();
     IDictionary<string, INode> GetAllSubNodes();
+    object GetData();
     void Print(int indent);
     string ConvertToJson();
   }

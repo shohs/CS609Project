@@ -52,6 +52,19 @@ namespace cs609.utilities
       return tokenBuilder.ToString();
     }
 
+    private static string ReadNumber(StringReader reader)
+    {
+      ConsumeWhitespace(reader);
+      StringBuilder tokenBuilder = new StringBuilder();
+
+      System.Globalization.NumberFormatInfo format = new System.Globalization.NumberFormatInfo();
+      while (char.IsDigit((char)reader.Peek()) || format.NumberDecimalSeparator.Contains((char)reader.Peek()))
+      {
+        tokenBuilder.Append((char)reader.Read());
+      }
+      return tokenBuilder.ToString();
+    }
+
     private static INode Parse(StringReader reader)
     {
       ConsumeWhitespace(reader);
@@ -65,7 +78,22 @@ namespace cs609.utilities
       }
       else
       {
-        throw new ArgumentException("Invalid JSON string passed to DataReader");
+        string num = ReadNumber(reader);
+        int iNum;
+        double dNum;
+
+        if (int.TryParse(num, out iNum))
+        {
+          return new PrimitiveNode<int>(iNum);
+        }
+        else if (double.TryParse(num, out dNum))
+        {
+          return new PrimitiveNode<double>(dNum);
+        }
+        else
+        {
+          throw new ArgumentException("Invalid JSON string passed to DataReader");
+        }
       }
     }
 

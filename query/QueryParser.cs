@@ -20,13 +20,74 @@ namespace cs609.query
     {
       if (MatchKeyword("select "))
       {
-        string collectionList = ParseCollectionList();
-        if (collectionList.Length == 0)
+        return ParseSelectQuery();
+      }
+      else if (MatchKeyword("delete "))
+      {
+        return ParseDeleteQuery();
+      }
+      else if (MatchKeyword("insert "))
+      {
+        return ParseInsertQuery();
+      }
+      else if (MatchKeyword("update "))
+      {
+        return ParseUpdateQuery();
+      }
+      else
+      {
+        return null;
+      }
+    }
+
+    private IQuery ParseSelectQuery()
+    {
+      string collectionList = ParseCollectionList();
+      if (collectionList.Length == 0)
+      {
+        throw new ArgumentException("Select query does not specify a field");
+      }
+      string[] keys = collectionList.Split('.');
+      SelectQuery query = null;
+
+      if (MatchKeyword("where "))
+      {
+        // TODO: Support OR clauses
+        // Also, this needs to be refactored
+        LinkedList<Condition> whereClauses = ParseConditions();
+        for (int i = keys.Length - 1; i >= 0; i--)
         {
-          throw new ArgumentException("Select query does not specify a field");
+          query = new SelectQuery(keys[i], query);
+
+          LinkedListNode<Condition> curNode = whereClauses.First, nextNode;
+          bool match = true;
+          while (curNode != null)
+          {
+            nextNode = curNode.Next;
+            Condition val = curNode.Value;
+            for (int j = 0; j <= i; j++)
+            {
+              if (j >= val.leftScope.Length || !val.leftScope[j].Equals(keys[j]))
+              {
+                match = false;
+                break;
+              }
+            }
+
+            if (match)
+            {
+              whereClauses.Remove(curNode);
+
+              query.AddFilter(ParseQueryFilter(val, i));
+
+            }
+
+            curNode = nextNode;
+          }
         }
-        string[] keys = collectionList.Split('.');
-        SelectQuery query = null;
+      }
+      else
+      {
         for (int i = keys.Length - 1; i >= 0; i--)
         {
           query = new SelectQuery(keys[i], query);
@@ -35,36 +96,87 @@ namespace cs609.query
           query.CommandType = Commands.Select;
         return query;
       }
-      else if (MatchKeyword("insert "))
+
+      return query;
+    }
+
+    private IQuery ParseDeleteQuery()
+    {
+      string collectionList = ParseCollectionList();
+      if (collectionList.Length == 0)
       {
-        string argument;
-        argument = ParseJSONString();
+        throw new ArgumentException("Delete query does not specify a field");
+      }
+      string[] keys = collectionList.Split('.');
+      DeleteQuery query = null;
 
-        if (!MatchKeyword("into "))
-        {
-          throw new ArgumentException("No \"into\" clause provided in insert");
-        }
-
-        string collectionList = ParseCollectionList();
-        if (collectionList.Length == 0)
-        {
-          throw new ArgumentException("Insert query does not specify an insert location");
-        }
-        string[] keys = collectionList.Split('.');
-
-        INode toInsert = DataReader.ParseJSONString(argument);
-        InsertQuery query = null;
+      if (MatchKeyword("where "))
+      {
+        // TODO: Support OR clauses
+        // Also, this needs to be refactored
+        LinkedList<Condition> whereClauses = ParseConditions();
         for (int i = keys.Length - 1; i >= 0; i--)
         {
-          query = new InsertQuery(toInsert, keys[i], query);
+          query = new DeleteQuery(keys[i], query);
+
+          LinkedListNode<Condition> curNode = whereClauses.First, nextNode;
+          bool match = true;
+          while (curNode != null)
+          {
+            nextNode = curNode.Next;
+            Condition val = curNode.Value;
+            for (int j = 0; j <= i; j++)
+            {
+              if (j >= val.leftScope.Length || !val.leftScope[j].Equals(keys[j]))
+              {
+                match = false;
+                break;
+              }
+            }
+
+            if (match)
+            {
+              whereClauses.Remove(curNode);
+              
+              query.AddFilter(ParseQueryFilter(val, i));
+
+            }
+
+            curNode = nextNode;
+          }
+        }
+      }
+      else
+      {
+        for (int i = keys.Length - 1; i >= 0; i--)
+        {
+          query = new DeleteQuery(keys[i], query);
         }
           query.CommandType = Commands.Insert;
           query.Keys = collectionList;
           query.NewValue = toInsert.ConvertToJson();
         return query;
       }
-      else if (MatchKeyword("update "))
+
+      return query;
+    }
+
+    private IQueryFilter ParseQueryFilter(Condition cond, int depth)
+    {
+      IDictionary<string, ComparatorDelegate> comparatorDict = new Dictionary<string, ComparatorDelegate>()
       {
+        {"<",  Comparators.LessThan},
+        {"<=", Comparators.LessThanEq},
+        {">",  Comparators.GreaterThan},
+        {">=", Comparators.GreaterThanEq},
+        {"==", Comparators.Equal},
+        {"!=", Comparators.NotEqual}
+      };
+
+      string[] collections = new string[cond.leftScope.Length - depth - 1];
+      for (int j = depth + 1; j < cond.leftScope.Length; j++)
+      {
+        collections[j - depth - 1] = cond.leftScope[j];
           string collectionList = ParseCollectionList();
           if (collectionList.Length == 0)
           {
@@ -88,10 +200,89 @@ namespace cs609.query
           query.NewValue = toUpdate.ConvertToJson();
           return query;
       }
+      int intLit;
+      double doubleLit;
+
+      IComparable literal = null;
+      if (cond.rightLiteral.Contains('"'))
+      {
+        literal = cond.rightLiteral.Substring(1, cond.rightLiteral.Length - 2);
+      }
+      else if (int.TryParse(cond.rightLiteral, out intLit))
+      {
+        literal = intLit;
+      }
+      else if (double.TryParse(cond.rightLiteral, out doubleLit))
+      {
+        literal = doubleLit;
+      }
+
+      if (literal != null && comparatorDict.Keys.Contains(cond.op))
+      {
+        return new ConstantComparisonFilter(collections, literal, comparatorDict[cond.op]);
+      }
       else
       {
-        return null;
+        throw new ArgumentException("Invalid operation found in where clause");
       }
+    }
+
+    private IQuery ParseInsertQuery()
+    {
+      string argument;
+      argument = ParseJSONString();
+
+      if (!MatchKeyword("into "))
+      {
+        throw new ArgumentException("No \"into\" clause provided in insert");
+      }
+
+      string collectionList = ParseCollectionList();
+      if (collectionList.Length == 0)
+      {
+        throw new ArgumentException("Insert query does not specify an insert location");
+      }
+      string[] keys = collectionList.Split('.');
+
+      INode toInsert = DataReader.ParseJSONString(argument);
+      InsertQuery query = null;
+      for (int i = keys.Length - 1; i >= 0; i--)
+      {
+        query = new InsertQuery(toInsert, keys[i], query);
+      }
+      return query;
+    }
+
+    private IQuery ParseUpdateQuery()
+    {
+      string argument;
+      string collectionList = ParseCollectionList();
+      if (collectionList.Length == 0)
+      {
+        throw new ArgumentException("Update query does not specify a field");
+      }
+      if (!MatchKeyword("value "))
+      {
+        throw new ArgumentException("No \"value\" clause provided in update");
+      }
+      argument = ParseJSONString();
+      string[] keys = collectionList.Split('.');
+      UpdateQuery query = null;
+      INode toUpdate;
+      if (argument.Contains('{'))
+      {
+        toUpdate = DataReader.ParseJSONString(argument);
+      }
+      else
+      {
+        toUpdate = new PrimitiveNode<string>(argument);
+      }
+
+      for (int i = keys.Length - 1; i >= 0; i--)
+      {
+        query = new UpdateQuery(toUpdate, keys[i], query);
+      }
+      return query;
     }
 
     private bool MatchKeyword(string keyword)
@@ -111,6 +302,20 @@ namespace cs609.query
         return false;
       }
       return _query.Substring(position, keyword.Length).ToLower().Equals(keyword);
+    }
+
+    private string NextKeyword()
+    {
+      StringBuilder keyword = new StringBuilder();
+
+      while (position < _query.Length && !char.IsWhiteSpace(_query[position]))
+      {
+        keyword.Append(_query[position]);
+        ++position;
+      }
+
+      ConsumeWhiteSpace();
+      return keyword.ToString();
     }
 
     private void AdvanceCursor(int characters)
@@ -167,6 +372,17 @@ namespace cs609.query
       return result;
     }
 
+    private string ParseLiteral()
+    {
+      StringBuilder literal = new StringBuilder();
+      while (position < _query.Length && (char.IsLetterOrDigit(_query[position]) || _query[position] == '"'))
+      {
+        literal.Append(_query[position++]);
+      }
+      ConsumeWhiteSpace();
+      return literal.ToString();
+    }
+
     private string ParseCollectionList()
     {
       StringBuilder collectionList = new StringBuilder();
@@ -194,6 +410,41 @@ namespace cs609.query
 
       position = endPosition;
       return collectionList.ToString();
+    }
+
+    private class Condition
+    {
+      public string[] leftScope;
+      public string op;
+      public string rightLiteral;
+    }
+    LinkedList<Condition> ParseConditions()
+    {
+      LinkedList<Condition> clist = new LinkedList<Condition>();
+
+      do
+      {
+        Condition c = new Condition();
+        c.leftScope = ParseCollectionList().Split('.');
+        c.op = ParseOperator();
+        c.rightLiteral = ParseLiteral();
+        clist.AddLast(c);
+      }
+      while (NextKeyword().ToLower().Equals("and"));
+
+      return clist;
+    }
+
+    private string ParseOperator()
+    {
+      StringBuilder op = new StringBuilder();
+      op.Append(_query[position++]);
+      if ("<>=!".Contains(_query[position]))
+      {
+        op.Append(_query[position++]);
+      }
+      ConsumeWhiteSpace();
+      return op.ToString();
     }
 
     private string _query;

@@ -53,6 +53,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="query\Commands.cs" />
+    <Compile Include="query\DeleteQuery.cs" />
     <Compile Include="query\InsertQuery.cs" />
     <Compile Include="query\IQuery.cs" />
     <Compile Include="query\Query.cs" />
@@ -64,6 +65,7 @@
     <Compile Include="utilities\DataReader.cs" />
     <Compile Include="utilities\DataWriter.cs" />
     <Compile Include="utilities\Logger.cs" />
+    <Compile Include="query\IQueryFilter.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
