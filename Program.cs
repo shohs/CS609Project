@@ -47,6 +47,12 @@ namespace cs609
       Console.WriteLine("\nQuery result");
       IQuery query2 = new QueryParser("select students.* where students.*.last == \"Name\"").ParseQuery();
       result = query2.Execute(root);
+      IQuery query3 = new QueryParser("update students.jschmoe.first value Joel").ParseQuery();
+      query3.Execute(root);
+
+      IQuery query3 = new QueryParser("set students.jschmoe.first value Joel").ParseQuery();
+      query3.Execute(root);
+
       if (result != null)
       {
         result.Print(0);
