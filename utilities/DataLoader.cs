@@ -25,7 +25,7 @@ namespace cs609.utilities
             }
             catch (Exception e)
             {
-                Console.Write(e.Message);
+                //Console.Write(e.Message);
                 return null;
             }
 

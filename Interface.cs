@@ -31,29 +31,36 @@ namespace cs609
                 switch (_command.ToLower())
                 {
                     case "print":
+                    case "1":
                         _collection.Print(5);
                         break;
-                    case "get":
-                         Console.Write("Which item would you like to retrieve?");
-                    var key = Console.ReadLine();
-                    var result = _collection.GetSubNode(key);
-                    result.Print(2);
-                        break;
                     case "checkpoint":
+                    case "2":
+                        var writer = new DataWriter(DatabaseName + ".dat");
+                        writer.WriteToFile(_collection.ConvertToJson());
                         Logger.WriteToFile(DatabaseName);
                         break;
-                    case "exit":
-                        Logger.WriteToFile(DatabaseName);
+                    case "rollback":
+                    case "3":
+                        _collection = _loader.LoadDataNodes();
                         break;
                     case "help":
                     case "?":
+                    case "4":
                         Console.WriteLine("You may enter the following Commands:");
-                        Console.WriteLine("print - prints a formatted view of all data");
-                        Console.WriteLine("checkpoint - creates a checkpoint and forces the log to write to disk");
-                        Console.WriteLine("exit - this ends the program");
-                        Console.WriteLine("help - displays a list of commands");
+                        Console.WriteLine("1) print - prints a formatted view of all data");
+                        Console.WriteLine("2) checkpoint - creates a checkpoint and forces the log to write to disk");
+                        Console.WriteLine("3) rollback - rolls the data back to its state at the last checkpoint");
+                        Console.WriteLine("4) help - displays a list of commands");
+                        Console.WriteLine("5) exit - this ends the program");
                         Console.WriteLine("You may also query the database.");
                         break;
+                    case "exit":
+                    case "5":
+                        _command = "exit";
+                        Logger.WriteToFile(DatabaseName);
+                        break;
+                   
                     default:
                         ProcessQuery();
                         break;

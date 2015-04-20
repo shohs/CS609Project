@@ -42,6 +42,7 @@ namespace cs609.query
                         var item = new LogItem()
                         {
                             TransactionType = CommandType,
+                            Command = Command,
                             StoreName = "cs609",
                             DocumentKey = _key,
                             NewValue = _toUpdate.ConvertToJson(),

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using cs609.data;
+using cs609.utilities;
 
 namespace cs609.query
 {
@@ -23,6 +24,15 @@ namespace cs609.query
 
     public override INode Execute(INode data)
     {
+        var item = new LogItem()
+        {
+            TransactionType = CommandType,
+            Command = Command,
+            StoreName = "cs609",
+            DocumentKey = _key,
+            Committed = false,
+            DateCreated = DateTime.Now
+        };
       if (_key.Equals("*") || _filters.Count != 0)
       {
         IDictionary<string, INode> subnodes = data.GetAllSubNodes();
@@ -36,6 +46,7 @@ namespace cs609.query
             collection.SetNode(pair.Key, pair.Value);
           }
           data.DeleteAllSubNodes();
+          Logger.LogTransaction(item);
           return collection;
         }
 
@@ -70,7 +81,7 @@ namespace cs609.query
         {
           data.DeleteSubNode(key);
         }
-
+        Logger.LogTransaction(item);
         return collection;
 
       }
@@ -80,6 +91,7 @@ namespace cs609.query
         if (_subQuery == null)
         {
           data.DeleteSubNode(_key);
+          Logger.LogTransaction(item);
           return subnode;
         }
         return _subQuery.Execute(subnode);

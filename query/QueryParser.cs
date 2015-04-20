@@ -118,6 +118,9 @@ namespace cs609.query
         for (int i = keys.Length - 1; i >= 0; i--)
         {
           query = new DeleteQuery(keys[i], query);
+          query.CommandType = Commands.Delete;
+          query.Keys = collectionList;
+          query.Command = _query;
 
           LinkedListNode<Condition> curNode = whereClauses.First, nextNode;
           bool match = true;
@@ -151,9 +154,11 @@ namespace cs609.query
         for (int i = keys.Length - 1; i >= 0; i--)
         {
           query = new DeleteQuery(keys[i], query);
+
         }
-          query.CommandType = Commands.Delete;
-          query.Keys = collectionList;
+        query.CommandType = Commands.Delete;
+        query.Keys = collectionList;
+        query.Command = _query;
         return query;
       }
 
@@ -206,28 +211,32 @@ namespace cs609.query
 
     private Query ParseInsertQuery()
     {
-      string argument;
-      argument = ParseJSONString();
+        string argument;
+        argument = ParseJSONString();
 
-      if (!MatchKeyword("into "))
-      {
-        throw new ArgumentException("No \"into\" clause provided in insert");
-      }
+        if (!MatchKeyword("into "))
+        {
+            throw new ArgumentException("No \"into\" clause provided in insert");
+        }
 
-      string collectionList = ParseCollectionList();
-      if (collectionList.Length == 0)
-      {
-        throw new ArgumentException("Insert query does not specify an insert location");
-      }
-      string[] keys = collectionList.Split('.');
+        string collectionList = ParseCollectionList();
+        if (collectionList.Length == 0)
+        {
+            throw new ArgumentException("Insert query does not specify an insert location");
+        }
+        string[] keys = collectionList.Split('.');
 
-      INode toInsert = DataReader.ParseJSONString(argument);
-      InsertQuery query = null;
-      for (int i = keys.Length - 1; i >= 0; i--)
-      {
-        query = new InsertQuery(toInsert, keys[i], query);
-      }
-      return query;
+        INode toInsert = DataReader.ParseJSONString(argument);
+        InsertQuery query = null;
+        for (int i = keys.Length - 1; i >= 0; i--)
+        {
+            query = new InsertQuery(toInsert, keys[i], query);
+            query.CommandType = Commands.Insert;
+            query.Keys = collectionList;
+            query.NewValue = toInsert.ConvertToJson();
+            query.Command = _query;
+        }
+        return query;
     }
 
     private Query ParseUpdateQuery()
@@ -257,8 +266,13 @@ namespace cs609.query
 
       for (int i = keys.Length - 1; i >= 0; i--)
       {
-        query = new UpdateQuery(toUpdate, keys[i], query);
+          query = new UpdateQuery(toUpdate, keys[i], query);
+          query.CommandType = Commands.Update;
+          query.Keys = collectionList;
+          query.NewValue = toUpdate.ConvertToJson();
+          query.Command = _query;
       }
+      
       return query;
     }
 

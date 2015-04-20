@@ -13,7 +13,7 @@ namespace cs609.utilities
 {
     public class Logger
     {
-        public static int TransactionCount = 0;
+        //public static int TransactionCount = 0;
        public static int TransactionLimit { get; set; }
        public static List<LogItem> Transactions = new List<LogItem>();
        public static void LogTransaction(LogItem logItem)
@@ -21,8 +21,7 @@ namespace cs609.utilities
             try
             { 
                 Transactions.Add(logItem);
-                TransactionCount += 1;
-                if (TransactionCount > TransactionLimit)
+                if (Transactions.Count > TransactionLimit)
                 {
                     WriteToFile(logItem.StoreName);
                 }
@@ -36,32 +35,35 @@ namespace cs609.utilities
         public static bool WriteToFile(string storeName)
         {
             string fileName = storeName + ".log";
-            LoadTransactions(fileName);
-            var writer = new DataWriter(fileName);
-            JavaScriptSerializer serializer = new JavaScriptSerializer();
-            var logString = new StringBuilder();
-            logString.Append("[");
-            foreach (var transaction in Transactions)
+            if (Transactions.Count > 0)
             {
-                try
+                LoadTransactions(fileName);
+                var writer = new DataWriter(fileName);
+                JavaScriptSerializer serializer = new JavaScriptSerializer();
+                var logString = new StringBuilder();
+                logString.Append("[");
+                foreach (var transaction in Transactions)
                 {
-                    transaction.Committed = true;
-                    logString.Append(serializer.Serialize(transaction));
-                    logString.Append(",");
+                    try
+                    {
+                        transaction.Committed = true;
+                        logString.Append(serializer.Serialize(transaction));
+                        logString.Append(",");
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                        transaction.Committed = false;
+                    }
                 }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                    transaction.Committed = false;
-                }
-            }
-            var json = JsonTrimmer.TrimTail(logString.ToString());
-            json = json.Trim('}');
-            json = json + "}]";
-            writer.WriteToFile(json);
+                var json = JsonTrimmer.TrimTail(logString.ToString());
+                json = json.Trim('}');
+                json = json + "}]";//i know this looks redundant but it was removing both } so i had to get them both and then add one back
+                writer.WriteToFile(json);
 
-            Transactions.Clear();
-            TransactionCount = 0;
+                Transactions.Clear();
+            }
+            
             return true;
         }
 
@@ -71,29 +73,31 @@ namespace cs609.utilities
             {
                 var reader = new DataLoader(fileName);
                 var log = reader.RetrieveRawData();
-                var serializer = new DataContractJsonSerializer(typeof(List<LogItem>));
-                var stream = new MemoryStream(Encoding.UTF8.GetBytes(log));
-                var logitems = (List<LogItem>)serializer.ReadObject(stream);
-                logitems.Reverse();
-                foreach (var item in logitems)
+                if (log.Length > 0)
                 {
-                    Transactions.Insert(0, item);
-                } 
+                    var serializer = new DataContractJsonSerializer(typeof(List<LogItem>));
+                    var stream = new MemoryStream(Encoding.UTF8.GetBytes(log));
+                    var logitems = (List<LogItem>)serializer.ReadObject(stream);
+                    logitems.Reverse();
+                    foreach (var item in logitems)
+                    {
+                        Transactions.Insert(0, item);
+                    } 
+                }
+               
 
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
             }
-
-
         }
     }
 
     public class LogItem
     {
         public Commands TransactionType { get; set; }
-        //public string Command { get; set; }
+        public string Command { get; set; }
         public string StoreName { get; set; }
         public string DocumentKey { get; set; }
         public string CurrentValue { get; set; }

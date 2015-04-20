@@ -10,6 +10,7 @@ namespace cs609.query
     public abstract class Query : IQuery
     {
         public Commands CommandType { get; set; }
+        public string Command { get; set; }
         public string Keys { get; set; }
         public string NewValue { get; set; }
         public abstract INode Execute(INode data);
