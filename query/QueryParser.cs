@@ -199,7 +199,7 @@ namespace cs609.query
 
     private IQueryFilter ParseQueryFilter(Condition cond, int depth)
     {
-        IDictionary<string, ComparatorDelegate> comparatorDict = new Dictionary<string, ComparatorDelegate>()
+      IDictionary<string, ComparatorDelegate> comparatorDict = new Dictionary<string, ComparatorDelegate>()
       {
         {"<",  Comparators.LessThan},
         {"<=", Comparators.LessThanEq},
@@ -209,66 +209,72 @@ namespace cs609.query
         {"!=", Comparators.NotEqual}
       };
 
-        string[] collections = new string[cond.leftScope.Length - depth - 1];
-        for (int j = depth + 1; j < cond.leftScope.Length; j++)
-        {
-            collections[j - depth - 1] = cond.leftScope[j];
-        }
-        int intLit;
-        double doubleLit;
+      string[] collections = new string[cond.leftScope.Length - depth - 1];
+      for (int j = depth + 1; j < cond.leftScope.Length; j++)
+      {
+        collections[j - depth - 1] = cond.leftScope[j];
+      }
 
-        IComparable literal = null;
-        if (cond.rightLiteral.Contains('"'))
-        {
-            literal = cond.rightLiteral.Substring(1, cond.rightLiteral.Length - 2);
-        }
-        else if (int.TryParse(cond.rightLiteral, out intLit))
-        {
-            literal = intLit;
-        }
-        else if (double.TryParse(cond.rightLiteral, out doubleLit))
-        {
-            literal = doubleLit;
-        }
+      if (cond.op.Equals("exists") || cond.op.Equals("nexists"))
+      {
+        return new ExistsFilter(collections, cond.op.Equals("nexists"));
+      }
 
-        if (literal != null && comparatorDict.Keys.Contains(cond.op))
-        {
-            return new ConstantComparisonFilter(collections, literal, comparatorDict[cond.op]);
-        }
-        else
-        {
-            throw new ArgumentException("Invalid operation found in where clause");
-        }
+      int intLit;
+      double doubleLit;
+
+      IComparable literal = null;
+      if (cond.rightLiteral.Contains('"'))
+      {
+        literal = cond.rightLiteral.Substring(1, cond.rightLiteral.Length - 2);
+      }
+      else if (int.TryParse(cond.rightLiteral, out intLit))
+      {
+        literal = intLit;
+      }
+      else if (double.TryParse(cond.rightLiteral, out doubleLit))
+      {
+        literal = doubleLit;
+      }
+
+      if (literal != null && comparatorDict.Keys.Contains(cond.op))
+      {
+        return new ConstantComparisonFilter(collections, literal, comparatorDict[cond.op]);
+      }
+      else
+      {
+        throw new ArgumentException("Invalid operation found in where clause");
+      }
     }
 
     private Query ParseInsertQuery()
     {
-        string argument;
-        argument = ParseJSONString();
+      string argument;
+      argument = ParseJSONString();
 
-        if (!MatchKeyword("into "))
-        {
-            throw new ArgumentException("No \"into\" clause provided in insert");
-        }
+      if (!MatchKeyword("into "))
+      {
+          throw new ArgumentException("No \"into\" clause provided in insert");
+      }
 
-        string collectionList = ParseCollectionList();
-        if (collectionList.Length == 0)
-        {
-            throw new ArgumentException("Insert query does not specify an insert location");
-        }
-        string[] keys = collectionList.Split('.');
+      string collectionList = ParseCollectionList();
+      if (collectionList.Length == 0)
+      {
+          throw new ArgumentException("Insert query does not specify an insert location");
+      }
+      string[] keys = collectionList.Split('.');
 
-        INode toInsert = DataReader.ParseJSONString(argument);
-        InsertQuery query = null;
-        for (int i = keys.Length - 1; i >= 0; i--)
-        {
-            query = new InsertQuery(toInsert, keys[i], query);
-            query.CommandType = Commands.Insert;
-            query.Keys = collectionList;
-            query.NewValue = toInsert.ConvertToJson();
-            query.Command = _query;
-        }
-        return query;
+      INode toInsert = DataReader.ParseJSONString(argument);
+      InsertQuery query = null;
+      for (int i = keys.Length - 1; i >= 0; i--)
+      {
+        query = new InsertQuery(toInsert, keys[i], query);
+        query.CommandType = Commands.Insert;
+        query.Keys = collectionList;
+        query.NewValue = toInsert.ConvertToJson();
+        query.Command = _query;
+      }
+      return query;
     }
 
     private Query ParseUpdateQuery()
@@ -320,7 +326,7 @@ namespace cs609.query
 
     private bool CheckKeyword(string keyword)
     {
-      if (position + keyword.Length >= _query.Length)
+      if (position + keyword.Length > _query.Length)
       {
         return false;
       }
@@ -450,7 +456,10 @@ namespace cs609.query
         Condition c = new Condition();
         c.leftScope = ParseCollectionList().Split('.');
         c.op = ParseOperator();
-        c.rightLiteral = ParseLiteral();
+        if (!c.op.Equals("exists") && !c.op.Equals("nexists"))
+        {
+          c.rightLiteral = ParseLiteral();
+        }
         clist.AddLast(c);
       }
       while (NextKeyword().ToLower().Equals("and"));
@@ -461,12 +470,25 @@ namespace cs609.query
     private string ParseOperator()
     {
       StringBuilder op = new StringBuilder();
-      op.Append(_query[position++]);
-      if ("<>=!".Contains(_query[position]))
+      if (CheckKeyword("exists"))
+      {
+        MatchKeyword("exists");
+        op.Append("exists");
+      }
+      else if (CheckKeyword("nexists"))
+      {
+        MatchKeyword("nexists");
+        op.Append("nexists");
+      }
+      else
       {
         op.Append(_query[position++]);
+        if ("<>=!".Contains(_query[position]))
+        {
+          op.Append(_query[position++]);
+        }
+        ConsumeWhiteSpace();
       }
-      ConsumeWhiteSpace();
       return op.ToString();
     }
 
