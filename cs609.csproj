@@ -56,6 +56,7 @@
     <Compile Include="query\Aggregate.cs" />
     <Compile Include="query\Commands.cs" />
     <Compile Include="query\DeleteQuery.cs" />
+    <Compile Include="query\IndexQuery.cs" />
     <Compile Include="query\InsertQuery.cs" />
     <Compile Include="query\IQuery.cs" />
     <Compile Include="query\OldProgram.cs" />

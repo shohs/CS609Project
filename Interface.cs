@@ -17,31 +17,31 @@ namespace cs609
         // private DataLoader _loader;
         // private INode _collection;
 
-        private Database db;
+        private Database _db;
 
         public void Start()
         {
-            db = new Database("cs609");
+            _db = new Database("cs609");
 
             //if time we can implement a choice of databases
             do
             {
-                Console.Write(db.DatabaseName + " > ");
+                Console.Write(_db.DatabaseName + " > ");
                 _command = Console.ReadLine();
 
                 switch (_command.ToLower())
                 {
                     case "print":
                     case "1":
-                        db.Print();
+                        _db.Print();
                         break;
                     case "checkpoint":
                     case "2":
-                        db.Checkpoint();
+                        _db.Checkpoint();
                         break;
                     case "rollback":
                     case "3":
-                        db.Rollback();
+                        _db.Rollback();
                         break;
                     case "help":
                     case "?":
@@ -65,14 +65,14 @@ namespace cs609
                     case "6":
                         _command = "exit";
                         // Checkpoint should save the data
-                        db.Checkpoint();
+                        _db.Checkpoint();
                         break;
 
                     default:
                         // Queries must end in a semicolon, so parse until one is encountered
                         while (!_command.Contains(';'))
                         {
-                          Console.Write(db.DatabaseName + " | ");
+                          Console.Write(_db.DatabaseName + " | ");
                           _command += Console.ReadLine();
                         }
                         int index = _command.IndexOf(';');
@@ -93,8 +93,8 @@ namespace cs609
         {
             try
             {
-                var query = new QueryParser(_command).ParseQuery();
-                INode result = db.ExecuteQuery(query);
+                var query = new QueryParser(_db, _command).ParseQuery();
+                INode result = _db.ExecuteQuery(query);
                 return result;
             }
             catch (Exception e)

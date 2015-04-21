@@ -1,4 +1,6 @@
-﻿using System;
+﻿#if FALSE
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -71,3 +73,5 @@ namespace cs609.query
         }
     }
 }
+
+#endif

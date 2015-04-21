@@ -9,7 +9,7 @@ using cs609.query;
 
 namespace cs609.data
 {
-  class Database
+  public class Database
   {
     public Database(string name)
     {
@@ -20,6 +20,7 @@ namespace cs609.data
       {
         _collection = new CollectionNode();
       }
+      _indices = new Dictionary<string, Index>();
       Logger.TransactionLimit = 2;
     }
 
@@ -35,7 +36,7 @@ namespace cs609.data
 
     public void Checkpoint()
     {
-      // This should be done in batches
+      // This could potentially benefit from being done in batches
       var writer = new DataWriter(DatabaseName + ".dat");
       writer.WriteToFile(_collection.ConvertToJson());
       Logger.WriteToFile(DatabaseName);
@@ -50,9 +51,24 @@ namespace cs609.data
       }
     }
 
+    public void CreateIndex(string field)
+    {
+      _indices[field] = new Index(_collection, field);
+    }
+
+
+    public Index getIndex(string field)
+    {
+      if (_indices.Keys.Contains(field))
+      {
+        return _indices[field];
+      }
+      return null;
+    }
+
     public string DatabaseName { get; private set; }
     private INode _collection;
     private DataLoader _loader;
-    private IDictionary<string, Index> indices;
+    private IDictionary<string, Index> _indices;
   }
 }

@@ -11,8 +11,9 @@ namespace cs609.query
 {
   public class QueryParser
   {
-    public QueryParser(string queryString)
+    public QueryParser(Database db, string queryString)
     {
+      _db = db;
       _query = queryString.Trim();
     }
 
@@ -493,6 +494,7 @@ namespace cs609.query
     }
 
     private string _query;
+    private Database _db;
     private int position = 0;
   }
 }
