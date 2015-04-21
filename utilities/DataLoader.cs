@@ -35,7 +35,7 @@ namespace cs609.utilities
             try
             {
                 string content;
-                using (var reader = new StreamReader(File.Open(_fileName, FileMode.Open)))
+                using (var reader = new StreamReader(File.Open(_fileName, FileMode.OpenOrCreate)))
                 {
                     content = reader.ReadToEnd();
                 }
