@@ -114,7 +114,8 @@ namespace cs609.data
             jSonString.Append(",");
         }
 
-        return JsonTrimmer.TrimTail(jSonString.ToString());
+        JsonTrimmer.TrimTail(jSonString);
+        return jSonString.ToString();
     }
     private IDictionary<string, INode> _collection;
   }

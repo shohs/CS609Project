@@ -13,36 +13,35 @@ namespace cs609
     public class Interface
     {
         private string _command;
-        private const string DatabaseName = "cs609";
-        private DataLoader _loader;
-        private INode _collection;
+        // private const string DatabaseName = "cs609";
+        // private DataLoader _loader;
+        // private INode _collection;
+
+        private Database db;
+
         public void Start()
         {
-            _loader = new DataLoader(DatabaseName + ".dat");
-            _collection = _loader.LoadDataNodes();
-            Logger.TransactionLimit = 2;
+            db = new Database("cs609");
 
             //if time we can implement a choice of databases
             do
             {
-                Console.Write(DatabaseName + " > ");
+                Console.Write(db.DatabaseName + " > ");
                 _command = Console.ReadLine();
 
                 switch (_command.ToLower())
                 {
                     case "print":
                     case "1":
-                        _collection.Print(0);
+                        db.Print();
                         break;
                     case "checkpoint":
                     case "2":
-                        var writer = new DataWriter(DatabaseName + ".dat");
-                        writer.WriteToFile(_collection.ConvertToJson());
-                        Logger.WriteToFile(DatabaseName);
+                        db.Checkpoint();
                         break;
                     case "rollback":
                     case "3":
-                        _collection = _loader.LoadDataNodes();
+                        db.Rollback();
                         break;
                     case "help":
                     case "?":
@@ -65,14 +64,15 @@ namespace cs609
                     case "exit":
                     case "6":
                         _command = "exit";
-                        Logger.WriteToFile(DatabaseName);
+                        // Checkpoint should save the data
+                        db.Checkpoint();
                         break;
 
                     default:
                         // Queries must end in a semicolon, so parse until one is encountered
                         while (!_command.Contains(';'))
                         {
-                          Console.Write(DatabaseName + " | ");
+                          Console.Write(db.DatabaseName + " | ");
                           _command += Console.ReadLine();
                         }
                         int index = _command.IndexOf(';');
@@ -94,7 +94,7 @@ namespace cs609
             try
             {
                 var query = new QueryParser(_command).ParseQuery();
-                INode result = query.Execute(_collection);
+                INode result = db.ExecuteQuery(query);
                 return result;
             }
             catch (Exception e)

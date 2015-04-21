@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="data\CollectionNode.cs" />
+    <Compile Include="data\Database.cs" />
     <Compile Include="data\Document.cs" />
     <Compile Include="data\Index.cs" />
     <Compile Include="data\INode.cs" />
@@ -63,6 +64,7 @@
     <Compile Include="query\SelectQuery.cs" />
     <Compile Include="query\UnionQuery.cs" />
     <Compile Include="query\UpdateQuery.cs" />
+    <Compile Include="test\VolumeTest.cs" />
     <Compile Include="utilities\DataLoader.cs" />
     <Compile Include="utilities\JsonTrimmer.cs" />
     <Compile Include="utilities\DataReader.cs" />

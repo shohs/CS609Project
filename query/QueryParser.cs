@@ -421,7 +421,7 @@ namespace cs609.query
       while (!isDone)
       {
         endPosition = ConsumeWhiteSpace(endPosition);
-        while (endPosition < _query.Length && (char.IsLetterOrDigit(_query[endPosition]) || _query[endPosition] == '*'))
+        while (endPosition < _query.Length && (char.IsLetterOrDigit(_query[endPosition]) || _query[endPosition] == '*' || _query[endPosition] == '_'))
         {
           collectionList.Append(_query[endPosition++]);
         }

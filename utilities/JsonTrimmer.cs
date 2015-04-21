@@ -8,12 +8,17 @@ namespace cs609.utilities
 {
     public class JsonTrimmer
     {
-        public static string TrimTail(string originalContent)
+        public static string TrimTail(string stringvalue)
         {
-            var stringvalue = originalContent.ToString();
             stringvalue = stringvalue.TrimEnd(',');
             stringvalue += "}";
             return stringvalue;
+        }
+        
+        public static void TrimTail(StringBuilder builder)
+        {
+            builder.Remove(builder.Length - 1, 1);
+            builder.Append('}');
         }
     }
 }
