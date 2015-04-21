@@ -18,6 +18,8 @@ namespace cs609
 
         public void Start()
         {
+            DisplayStartUpText();
+
             _db = new Database("MordorDb");
 
             //if time we can implement a choice of databases
@@ -43,14 +45,7 @@ namespace cs609
                     case "help":
                     case "?":
                     case "4":
-                        Console.WriteLine("You may enter the following Commands:");
-                        Console.WriteLine("1) print - prints a formatted view of all data");
-                        Console.WriteLine("2) checkpoint - creates a checkpoint and forces the log to write to disk");
-                        Console.WriteLine("3) rollback - rolls the data back to its state at the last checkpoint");
-                        Console.WriteLine("4) help - displays a list of commands");
-                        Console.WriteLine("5) clear - clear the terminal");
-                        Console.WriteLine("6) exit - this ends the program");
-                        Console.WriteLine("You may also query the database.");
+                        DisplayHelpText();
                         break;
 
                     case "clear":
@@ -84,6 +79,31 @@ namespace cs609
                 }
 
             } while (!_command.Equals("exit"));
+        }
+
+        private void DisplayStartUpText()
+        {
+            //Fancy Colors for extra points ;)
+            Console.Write("Welcome to ");
+            Console.ForegroundColor = ConsoleColor.DarkRed;
+            Console.WriteLine(String.Format("MordorDb{0}", Environment.NewLine));
+            Console.ResetColor();
+
+            DisplayHelpText();
+        }
+
+        private void DisplayHelpText()
+        {
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
+            Console.WriteLine("Available Commands:");
+            Console.WriteLine("1) print - prints a formatted view of all data");
+            Console.WriteLine("2) checkpoint - creates a checkpoint and forces the log to write to disk");
+            Console.WriteLine("3) rollback - rolls the data back to its state at the last checkpoint");
+            Console.WriteLine("4) help - displays a list of commands");
+            Console.WriteLine("5) clear - clear the terminal");
+            Console.WriteLine("6) exit - this ends the program");
+            Console.WriteLine("You may also query the database.");
+            Console.ResetColor();
         }
 
         private INode ProcessQuery()
