@@ -21,7 +21,7 @@ namespace cs609
       }
       else
       {
-        var userInterface = new Interface();
+        var userInterface = new UserInterface();
         userInterface.Start();
       }
     }

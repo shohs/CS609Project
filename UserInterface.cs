@@ -10,7 +10,7 @@ using cs609.utilities;
 
 namespace cs609
 {
-    public class Interface
+    public class UserInterface
     {
         private string _command;
 
