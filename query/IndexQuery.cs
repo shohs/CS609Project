@@ -9,11 +9,13 @@ namespace cs609.query
 {
   class IndexQuery : Query
   {
-    public IndexQuery(string field, IComparable min, IComparable max, IQuery subQuery = null)
+    public IndexQuery(string field, IComparable min, IComparable max, bool minEqual, bool maxEqual, IQuery subQuery = null)
     {
       _index = null; // get this somehow
       _min = min;
       _max = max;
+      _minEqual = minEqual;
+      _maxEqual = maxEqual;
       _subQuery = subQuery;
     }
 
@@ -26,7 +28,7 @@ namespace cs609.query
       }
       else
       {
-        collection = _index.GetNodeRange(_min, _max);
+        collection = _index.GetNodeRange(_min, _max, _minEqual, _maxEqual);
       }
 
       if (collection == null || _subQuery == null) return collection;
@@ -35,6 +37,7 @@ namespace cs609.query
 
     private IQuery _subQuery;
     private IComparable _min, _max;
+    private bool _minEqual, _maxEqual;
     private Index _index;
   }
 }

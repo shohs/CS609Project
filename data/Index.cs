@@ -23,19 +23,17 @@ namespace cs609.data
 
     public Index(INode root, string field)
     {
-      
+      _tree = new BPlusTree();
     }
 
     public INode GetSingleNode(IComparable value)
     {
-      CollectionNode collection = new CollectionNode();
-      return collection;
+      return _tree.GetSingleNode(value);
     }
 
-    public INode GetNodeRange(IComparable min, IComparable max)
+    public INode GetNodeRange(IComparable min, IComparable max, bool minEqual, bool maxEqual)
     {
-      CollectionNode collection = new CollectionNode();
-      return collection;
+      return _tree.GetNodeRange(min, max, minEqual, maxEqual);
     }
 
     private BPlusTree _tree;
@@ -44,7 +42,6 @@ namespace cs609.data
     {
       public const int BranchingFactor = 50;
       private BPlusNode _root = new BPlusLeaf();
-      private bool _rootIsLeaf = true;
 
       public void Insert(IComparable value, string key, INode node)
       {
@@ -157,12 +154,51 @@ namespace cs609.data
         return collection;
       }
 
-      public INode GetNodeRange(IComparable min, IComparable max)
+      public INode GetNodeRange(IComparable min, IComparable max, bool minEqual, bool maxEqual)
       {
-        return null;
+        BPlusNode curNode = _root;
+
+        while (!curNode.IsLeaf)
+        {
+          BPlusInternalNode iNode = (BPlusInternalNode)curNode;
+          for (int i = 0; i < curNode.Size - 1; i++)
+          {
+            if (min.CompareTo(iNode.Values[i]) < 0)
+            {
+              curNode = iNode.Children[i];
+              break;
+            }
+          }
+          curNode = iNode.Children[iNode.Size - 1];
+        }
+
+        BPlusLeaf leaf = (BPlusLeaf)curNode;
+        CollectionNode collection = new CollectionNode();
+        while (leaf != null)
+        {
+          for (int i = 0; i < leaf.Size; i++)
+          {
+            if ((leaf.Values[i].CompareTo(min) > 0 || leaf.Values[i].CompareTo(min) == 0 && minEqual)
+              && (leaf.Values[i].CompareTo(max) < 0 || leaf.Values[i].CompareTo(max) == 0 && maxEqual))
+            {
+              for (int j = 0; j < leaf.Children.Length; j++)
+              {
+                collection.SetNode(leaf.ChildrenKeys[i][j], leaf.Children[i][j]);
+              }
+            }
+            else if (leaf.Values[i].CompareTo(max) > 0 || leaf.Values[i].CompareTo(max) == 0 && !maxEqual)
+            {
+              return collection;
+            }
+          }
+
+          leaf = leaf.Next;
+        }
+        return collection;
       }
 
-      private interface BPlusNode {
+      private interface BPlusNode 
+      {
         bool IsLeaf { get; }
         int Size { get; set; }
         IComparable[] Values { get; }
@@ -180,7 +216,7 @@ namespace cs609.data
 
       private class BPlusLeaf : BPlusNode
       {
-        public BPlusNode Next;
+        public BPlusLeaf Next = null;
         public int Size { get; set; }
         public bool IsLeaf { get { return true; } }
         public BPlusNode Parent = null;
