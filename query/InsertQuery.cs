@@ -53,7 +53,7 @@ namespace cs609.query
           {
               TransactionType = CommandType,
               Command = Command,
-              StoreName = "cs609",
+              StoreName = DatabaseName,
               DocumentKey = _key,
               NewValue = _toInsert.ConvertToJson(),
               CurrentValue = string.Empty,

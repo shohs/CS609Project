@@ -28,7 +28,7 @@ namespace cs609.query
         {
             TransactionType = CommandType,
             Command = Command,
-            StoreName = "cs609",
+            StoreName = DatabaseName,
             DocumentKey = _key,
             Committed = false,
             DateCreated = DateTime.Now

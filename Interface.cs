@@ -13,15 +13,12 @@ namespace cs609
     public class Interface
     {
         private string _command;
-        // private const string DatabaseName = "cs609";
-        // private DataLoader _loader;
-        // private INode _collection;
 
         private Database _db;
 
         public void Start()
         {
-            _db = new Database("cs609");
+            _db = new Database("MordorDb");
 
             //if time we can implement a choice of databases
             do

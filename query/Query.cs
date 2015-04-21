@@ -14,5 +14,6 @@ namespace cs609.query
         public string Keys { get; set; }
         public string NewValue { get; set; }
         public abstract INode Execute(INode data);
+        public string DatabaseName { get; set; }
     }
 }
