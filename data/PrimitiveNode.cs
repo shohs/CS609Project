@@ -43,7 +43,14 @@ namespace cs609.data
 
     public virtual void Print(int indent)
     {
-      Console.WriteLine(Value);
+      if (Value.GetType() == typeof(string))
+      {
+        Console.WriteLine("\"" + Value.ToString() + "\"");
+      }
+      else
+      {
+        Console.WriteLine(Value);
+      }
     }
 
     public virtual string ConvertToJson()

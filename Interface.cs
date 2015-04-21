@@ -52,16 +52,32 @@ namespace cs609
                         Console.WriteLine("2) checkpoint - creates a checkpoint and forces the log to write to disk");
                         Console.WriteLine("3) rollback - rolls the data back to its state at the last checkpoint");
                         Console.WriteLine("4) help - displays a list of commands");
-                        Console.WriteLine("5) exit - this ends the program");
+                        Console.WriteLine("5) clear - clear the terminal");
+                        Console.WriteLine("6) exit - this ends the program");
                         Console.WriteLine("You may also query the database.");
                         break;
-                    case "exit":
+
+                    case "clear":
                     case "5":
+                        Console.Clear();
+                        break;
+
+                    case "exit":
+                    case "6":
                         _command = "exit";
                         Logger.WriteToFile(DatabaseName);
                         break;
-                   
+
                     default:
+                        // Queries must end in a semicolon, so parse until one is encountered
+                        while (!_command.Contains(';'))
+                        {
+                          Console.Write(DatabaseName + " | ");
+                          _command += Console.ReadLine();
+                        }
+                        int index = _command.IndexOf(';');
+                        _command = _command.Substring(0, index + 1);
+
                         INode result = ProcessQuery();
                         if (result != null)
                         {

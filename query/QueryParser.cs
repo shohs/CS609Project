@@ -36,7 +36,7 @@ namespace cs609.query
       }
       else
       {
-        return null;
+        throw new ArgumentException("Invalid query!");
       }
     }
 
