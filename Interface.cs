@@ -99,7 +99,7 @@ namespace cs609
             }
             catch (Exception e)
             {
-                Console.Write(e);
+                Console.WriteLine(e.Message);
                 return null;
             }
         }
