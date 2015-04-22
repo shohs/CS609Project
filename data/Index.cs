@@ -3,27 +3,68 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using cs609.query;
 
 namespace cs609.data
 {
   public class Index
   {
-    public static IDictionary<string, Index> LoadIndexes(INode root)
+    public static IDictionary<string, Index> LoadIndexes(Database db, INode root)
     {
       var list = new List<string>(); // get this from some stored state
       var dictionary = new Dictionary<string, Index>();
 
       foreach (var index in list)
       {
-        dictionary[index] = new Index(root, index);
+        dictionary[index] = new Index(db, root, index);
       }
 
       return dictionary;
     }
 
-    public Index(INode root, string field)
+    public Index(Database db, INode root, string field)
     {
       _tree = new BPlusTree();
+
+      string[] fields = field.Split('.');
+      string superfield = "";
+      int i;
+      for (i = fields.Length - 1; i >= 0; i--)
+      {
+        if (fields[i].Equals("*"))
+        {
+          break;
+        }
+      }
+      if (i < 0) throw new ArgumentException("Indexes must contain a wildcard");
+
+      for (int j = 0; j <= i; j++)
+      {
+        superfield += fields[j] + ".";
+      }
+      superfield = superfield.Substring(0, superfield.Length - 1);
+
+      IQuery query = new QueryParser("select " + superfield + ";").ParseQuery(db);
+      INode result = query.Execute(root);
+      // result.Print(0);
+
+      IDictionary<string, INode> subnodes = result.GetAllSubNodes();
+      if (subnodes != null)
+      {
+        foreach (KeyValuePair<string, INode> pair in subnodes)
+        {
+          INode node = pair.Value;
+          string key = pair.Key;
+
+          INode curNode = node;
+          for (int j = i + 1; j < fields.Length; j++)
+          {
+            curNode = curNode.GetSubNode(fields[j]);
+          }
+
+          _tree.Insert(key, (IComparable)curNode.GetData(), node);
+        }
+      }
     }
 
     public INode GetSingleNode(IComparable value)
@@ -43,7 +84,7 @@ namespace cs609.data
       public const int BranchingFactor = 50;
       private BPlusNode _root = new BPlusLeaf();
 
-      public void Insert(IComparable value, string key, INode node)
+      public void Insert(string key, IComparable value, INode node)
       {
         BPlusNode curNode = _root;
 
@@ -62,143 +103,110 @@ namespace cs609.data
         }
 
         BPlusLeaf leaf = (BPlusLeaf)curNode;
-        if (leaf.Size == 0)
+        int index = leaf.Values.BinarySearch(value);
+        if (index < 0)
         {
-          leaf.Values[0] = value;
-          leaf.Children[0] = new List<INode>();
-          leaf.Children[0].Add(node);
-          leaf.ChildrenKeys[0] = new List<string>();
-          leaf.ChildrenKeys[0].Add(key);
-          leaf.Size++;
-          return;
+          index = ~index;
+          leaf.Values.Insert(index, value);
+          leaf.Children.Insert(index, new List<INode>());
+          leaf.ChildrenKeys.Insert(index, new List<string>());
         }
+        else
+        {
+          leaf.Children[index] = new List<INode>();
+          leaf.ChildrenKeys[index] = new List<string>();
+        }
+        leaf.Children[index].Add(node);
+        leaf.ChildrenKeys[index].Add(key);
 
-        for (int i = 0; i < leaf.Size; i++)
+        if (leaf.Children.Count >= BranchingFactor)
         {
-          if (leaf.Values[i].CompareTo(value) == 0)
-          {
-            leaf.Children[i].Add(node);
-            return;
-          }
-        }
-        
-        if (curNode.Size == BranchingFactor)
-        {
-          // split the node
+          List<IComparable> leftVals = (List<IComparable>)leaf.Values.Take(leaf.Values.Count / 2);
+          List<IComparable> rightVals = (List<IComparable>)leaf.Values.Skip(leaf.Values.Count / 2);
+
+          List<List<INode>> leftList = (List<List<INode>>)leaf.Children.Take(leaf.Children.Count / 2);
+          List<List<INode>> rightList = (List<List<INode>>)leaf.Children.Skip(leaf.Children.Count / 2);
+
+          List<List<string>> leftListKeys = (List<List<string>>)leaf.ChildrenKeys.Take(leaf.Children.Count / 2);
+          List<List<string>> rightListKeys = (List<List<string>>)leaf.ChildrenKeys.Skip(leaf.Children.Count / 2);
+
           BPlusLeaf newLeaf = new BPlusLeaf();
-          int i;
-          for (i = 0; i < curNode.Size - 1; i++)
-          {
-            if (value.CompareTo(curNode.Values[i]) < 0)
-            {
-              break;
-            }
-          }
+          leaf.Values = leftVals;
+          leaf.Children = leftList;
+          leaf.ChildrenKeys = leftListKeys;
 
-          int halfway = BranchingFactor / 2;
-          if (i < halfway)
-          {
-            for (int j = 0; j < halfway; j++)
-            {
-              newLeaf.Children[j] = leaf.Children[halfway + j - 1];
-              leaf.Children[halfway + j - 1] = null;
-              newLeaf.ChildrenKeys[j] = leaf.ChildrenKeys[halfway + j - 1];
-              leaf.ChildrenKeys[halfway + j - 1] = null;
-              newLeaf.Values[j] = curNode.Values[halfway + j - 1];
-              leaf.Values[halfway + j - 1] = null;
-            }
+          newLeaf.Values = rightVals;
+          newLeaf.Children = rightList;
+          newLeaf.ChildrenKeys = rightListKeys;
 
-            for (int j = halfway - 1; j >= i; j--)
-            {
-              leaf.Children[j + 1] = leaf.Children[j];
-              leaf.Values[j + 1] = leaf.Values[j];
-            }
-            leaf.Children[i] = new List<INode>();
-            leaf.Children[i].Add(node);
-            leaf.ChildrenKeys[i] = new List<string>();
-            leaf.ChildrenKeys[i].Add(key);
+          newLeaf.Next = leaf.Next;
+          leaf.Next = newLeaf;
 
-            leaf.Size = halfway;
-            newLeaf.Size = BranchingFactor - halfway + 1;
-          }
-          else
-          {
-            for (int j = halfway; j < BranchingFactor; j++)
-            {
-              newLeaf.Children[j - halfway] = leaf.Children[j];
-              leaf.Children[j] = null;
-              newLeaf.ChildrenKeys[j - halfway] = leaf.ChildrenKeys[j];
-              leaf.ChildrenKeys[j] = null;
-              newLeaf.Values[j - halfway] = curNode.Values[j];
-              leaf.Values[j] = null;
-            }
-
-            for (int j = 0; j < BranchingFactor - halfway; i++)
-            {
-              if (newLeaf.Values[j].CompareTo(value) < 0)
-              {
-                for (int k = leaf.Size - 1; k >= i + 1; k--)
-                {
-                  newLeaf.Values[k + 1] = newLeaf.Values[k];
-                  newLeaf.Children[k + 1] = newLeaf.Children[k];
-                }
-                newLeaf.Values[j + 1] = value;
-                newLeaf.Children[j + 1] = new List<INode>();
-                newLeaf.Children[j + 1].Add(node);
-                newLeaf.ChildrenKeys[j + 1] = new List<string>();
-                newLeaf.ChildrenKeys[j + 1].Add(key);
-                return;
-              }
-            }
-            newLeaf.Values[BranchingFactor - halfway] = value;
-            newLeaf.Children[BranchingFactor - halfway] = new List<INode>();
-            newLeaf.Children[BranchingFactor - halfway].Add(node);
-            newLeaf.ChildrenKeys[BranchingFactor - halfway] = new List<string>();
-            newLeaf.ChildrenKeys[BranchingFactor - halfway].Add(key);
-            newLeaf.Size++;
-
-          }
-
-          if (curNode.Parent == null)
+          if (leaf.Parent == null)
           {
             BPlusInternalNode parent = new BPlusInternalNode();
-            parent.Size = 1;
             parent.Values[0] = newLeaf.Values[0];
             parent.Children[0] = leaf;
             parent.Children[1] = newLeaf;
             leaf.Parent = parent;
             newLeaf.Parent = parent;
+            _root = parent;
           }
           else
           {
-
-          }
-        }
-        else
-        {
-          for (int i = 0; i < leaf.Size; i++)
-          {
-            if (leaf.Values[i].CompareTo(value) < 0)
+            int parentIndex = leaf.Parent.Values.BinarySearch(newLeaf.Values[0]);
+            if (parentIndex < 0)
             {
-              for (int j = leaf.Size - 1; j >= i + 1; j--)
+              parentIndex = ~parentIndex;
+            }
+            BPlusInternalNode inode = (BPlusInternalNode)leaf.Parent;
+            inode.Values.Insert(parentIndex, value);
+            inode.Children.Insert(parentIndex + 1, newLeaf);
+            newLeaf.Parent = inode;
+
+            // Recursively split until the tree is not overloaded
+            while (inode.Size >= BranchingFactor)
+            {
+              List<BPlusNode> leftNodes = (List<BPlusNode>)inode.Children.Take(inode.Children.Count / 2);
+              List<BPlusNode> rightNodes = (List<BPlusNode>)inode.Children.Skip(inode.Children.Count / 2);
+
+              leftVals = (List<IComparable>)inode.Values.Take(inode.Values.Count / 2);
+              rightVals = (List<IComparable>)inode.Values.Skip(inode.Values.Count / 2);
+
+              BPlusInternalNode sibling = new BPlusInternalNode();
+              sibling.Values = rightVals;
+              sibling.Children = rightNodes;
+
+              inode.Values = leftVals;
+              inode.Children = leftNodes;
+
+              if (inode.Parent == null)
               {
-                leaf.Values[j + 1] = leaf.Values[j];
-                leaf.Children[j + 1] = leaf.Children[j];
+                BPlusInternalNode parent = new BPlusInternalNode();
+                parent.Values[0] = sibling.Values[0];
+                parent.Children[0] = inode;
+                parent.Children[1] = sibling;
+                inode.Parent = parent;
+                sibling.Parent = parent;
+                inode = parent;
+                _root = parent;
               }
-              leaf.Values[i + 1] = value;
-              leaf.Children[i + 1] = new List<INode>();
-              leaf.Children[i + 1].Add(node);
-              leaf.ChildrenKeys[i + 1] = new List<string>();
-              leaf.ChildrenKeys[i + 1].Add(key);
-              return;
+              else
+              {
+                parentIndex = inode.Parent.Values.BinarySearch(newLeaf.Values[0]);
+                if (parentIndex < 0)
+                {
+                  parentIndex = ~parentIndex;
+                }
+                
+                inode.Parent.Values.Insert(parentIndex, value);
+                ((BPlusInternalNode)inode.Parent).Children.Insert(parentIndex + 1, newLeaf);
+                sibling.Parent = inode.Parent;
+                inode = (BPlusInternalNode)inode.Parent;
+              }
+
             }
           }
-          leaf.Values[leaf.Size] = value;
-          leaf.Children[leaf.Size] = new List<INode>();
-          leaf.Children[leaf.Size].Add(node);
-          leaf.ChildrenKeys[leaf.Size] = new List<string>();
-          leaf.ChildrenKeys[leaf.Size].Add(key);
-          leaf.Size++;
         }
       }
 
@@ -213,32 +221,38 @@ namespace cs609.data
 
         while (!curNode.IsLeaf)
         {
-          BPlusInternalNode iNode = (BPlusInternalNode)curNode;
-          for (int i = 0; i < curNode.Size - 1; i++)
+          int i;
+          BPlusInternalNode inode = (BPlusInternalNode)curNode;
+          for (i = 0; i < inode.Values.Count; i++)
           {
-            if (value.CompareTo(iNode.Values[i]) < 0)
+            if (value.CompareTo(inode.Values[i]) >= 0)
             {
-              curNode = iNode.Children[i];
+              curNode = inode.Children[i];
               break;
             }
           }
-          curNode = iNode.Children[iNode.Size - 1];
+
+          if (i == inode.Values.Count)
+          {
+            curNode = inode.Children[i];
+          }
         }
 
-        BPlusLeaf leaf = (BPlusLeaf)curNode;
         CollectionNode collection = new CollectionNode();
-        for (int i = 0; i < leaf.Size; i++)
+        BPlusLeaf leaf = (BPlusLeaf)curNode;
+        for (int i = 0; i < leaf.Values.Count; i++)
         {
-          if (leaf.Values[i].CompareTo(value) == 0)
+          if (value.CompareTo(leaf.Values[i]) == 0)
           {
-            for (int j = 0; j < leaf.Children.Length; j++)
+            for (int j = 0; j < leaf.Children[i].Count; j++)
             {
               collection.SetNode(leaf.ChildrenKeys[i][j], leaf.Children[i][j]);
             }
             return collection;
           }
-          else if (leaf.Values[i].CompareTo(value) < 0)
+          else if (value.CompareTo(leaf.Values[i]) < 0)
           {
+            // We've already passed the portion where it would be equal, 
             return collection;
           }
         }
@@ -272,7 +286,7 @@ namespace cs609.data
             if ((leaf.Values[i].CompareTo(min) > 0 || leaf.Values[i].CompareTo(min) == 0 && minEqual)
               && (leaf.Values[i].CompareTo(max) < 0 || leaf.Values[i].CompareTo(max) == 0 && maxEqual))
             {
-              for (int j = 0; j < leaf.Children.Length; j++)
+              for (int j = 0; j < leaf.Children[i].Count; j++)
               {
                 collection.SetNode(leaf.ChildrenKeys[i][j], leaf.Children[i][j]);
               }
@@ -291,31 +305,35 @@ namespace cs609.data
       private interface BPlusNode 
       {
         bool IsLeaf { get; }
-        int Size { get; set; }
+        int Size { get; }
         BPlusNode Parent { get; set; }
-        IComparable[] Values { get; }
+        List<IComparable> Values { get; set; }
       }
 
       private class BPlusInternalNode : BPlusNode
       {
-        public int Size { get; set; }
+        public int Size { get { return Children.Count; } }
         public bool IsLeaf { get { return false; } }
         public BPlusNode Parent { get; set; }
-        public BPlusNode[] Children = new BPlusNode[BranchingFactor];
-        public IComparable[] Values { get { return _values; } }
-        private IComparable[] _values = new IComparable[BranchingFactor - 1];
+
+        public List<BPlusNode> Children = new List<BPlusNode>(BranchingFactor);
+        public List<IComparable> Values { get { return _values; } set { _values = value; } }
+
+        private List<IComparable> _values = new List<IComparable>(BranchingFactor - 1);
       }
 
       private class BPlusLeaf : BPlusNode
       {
         public BPlusLeaf Next = null;
-        public int Size { get; set; }
+        public int Size { get { return Children.Count; } }
         public bool IsLeaf { get { return true; } }
         public BPlusNode Parent { get; set; }
-        public IList<INode>[] Children = new List<INode>[BranchingFactor - 1];
-        public IList<string>[] ChildrenKeys = new List<string>[BranchingFactor - 1];
-        public IComparable[] Values { get { return _values; } }
-        public IComparable[] _values = new IComparable[BranchingFactor - 1];
+
+        public List<List<INode>> Children = new List<List<INode>>(BranchingFactor - 1);
+        public List<List<string>> ChildrenKeys = new List<List<string>>(BranchingFactor - 1);
+        public List<IComparable> Values { get { return _values; } set { _values = value; } }
+
+        private List<IComparable> _values = new List<IComparable>(BranchingFactor - 1);
       }
     }
   }

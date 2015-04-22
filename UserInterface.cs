@@ -115,6 +115,8 @@ namespace cs609
             Console.ResetColor();
 
             DisplayHelpText();
+
+            Console.WriteLine();
         }
 
         private void DisplayHelpText()
@@ -135,10 +137,11 @@ namespace cs609
         {
             Console.ForegroundColor = ConsoleColor.DarkGreen;
             Console.WriteLine("Available Queries:");
-            Console.WriteLine("select - select *.*.first");
-            Console.WriteLine("insert - insert { “first” : “Joe”, “last” : “Schmoe” } into students");
-            Console.WriteLine("update - update students.jschmoe.first value Joel");
-            Console.WriteLine("delete - delete students.* where students.*.first < “George”");
+            Console.WriteLine("select - select *.*.first;");
+            Console.WriteLine("insert - insert { “first” : “Joe”, “last” : “Schmoe” } into students;");
+            Console.WriteLine("update - update students.jschmoe.first value Joel;");
+            Console.WriteLine("delete - delete students.* where students.*.first < “George”;");
+            Console.WriteLine("index - index students.*.id;");
             Console.ResetColor();
         }
 
@@ -146,9 +149,17 @@ namespace cs609
         {
             try
             {
-                var query = new QueryParser(_db, _command).ParseQuery();
-                INode result = _db.ExecuteQuery(query);
-                return result;
+                if (_command.ToLower().StartsWith("index ") || _command.ToLower().StartsWith("deleteindex "))
+                {
+                    new QueryParser(_command).CreateIndex(_db);
+                    return null;
+                }
+                else
+                {
+                    var query = new QueryParser(_command).ParseQuery(_db);
+                    INode result = _db.ExecuteQuery(query);
+                    return result;
+                }
             }
             catch (Exception e)
             {

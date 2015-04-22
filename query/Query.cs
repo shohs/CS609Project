@@ -15,5 +15,6 @@ namespace cs609.query
         public string NewValue { get; set; }
         public abstract INode Execute(INode data);
         public string DatabaseName { get; set; }
+        public virtual IQuery SubQuery { get { return null; } }
     }
 }

@@ -43,6 +43,7 @@ namespace cs609.query
       return union;
     }
 
+    public IQuery SubQuery { get { return null; } }
     private IQuery _left;
     private IQuery _right;
   }

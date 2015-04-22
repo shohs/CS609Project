@@ -31,7 +31,7 @@ namespace cs609.test
       stopwatch.Start();
       string bstring = builder.ToString();
       builder = null;
-      var query = new QueryParser(db, bstring).ParseQuery();
+      var query = new QueryParser(bstring).ParseQuery(db);
       bstring = null;
       db.ExecuteQuery(query);
 
@@ -45,7 +45,7 @@ namespace cs609.test
       stopwatch.Reset();
 
       stopwatch.Start();
-      query = new QueryParser(db, "select average records.*.field;").ParseQuery();
+      query = new QueryParser("select average records.*.field;").ParseQuery(db);
       INode results = db.ExecuteQuery(query);
       millis = stopwatch.ElapsedMilliseconds;
       stopwatch.Stop();

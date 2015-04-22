@@ -53,11 +53,20 @@ namespace cs609.data
 
     public void CreateIndex(string field)
     {
-      _indices[field] = new Index(_collection, field);
+      _indices[field] = new Index(this, _collection, field);
     }
 
+    public void DeleteIndex(string field)
+    {
+      _indices.Remove(field);
+    }
 
-    public Index getIndex(string field)
+    public bool HasIndex(string field)
+    {
+      return _indices.ContainsKey(field);
+    }
+
+    public Index GetIndex(string field)
     {
       if (_indices.Keys.Contains(field))
       {

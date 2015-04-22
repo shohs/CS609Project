@@ -10,6 +10,8 @@ namespace cs609.query
   public interface IQueryFilter
   {
     bool ShouldInclude(INode node);
+    string[] Fields { get; }
+    IComparable CompareValue { get; }
   }
 
   public delegate bool ComparatorDelegate(IComparable left, IComparable right);
@@ -55,8 +57,11 @@ namespace cs609.query
     }
 
     private string[] _subCollections;
+    public string[] Fields { get { return _subCollections; } }
     private IComparable _compareVal;
+    public IComparable CompareValue { get { return _compareVal; } }
     private ComparatorDelegate _func;
+    public ComparatorDelegate Comparator { get { return _func; } }
   }
 
   public class ExistsFilter : IQueryFilter
@@ -85,10 +90,13 @@ namespace cs609.query
       return true ^ _invert;
     }
 
+    public string[] Fields { get { return _subCollections; } }
     private string[] _subCollections;
+    public IComparable CompareValue { get { return 0; } }
     private bool _invert;
   }
 
+  /*
   public class FieldComparisonFilter : IQueryFilter
   {
     public virtual bool ShouldInclude(INode node)
@@ -96,4 +104,5 @@ namespace cs609.query
       return false;
     }
   }
+   */
 }

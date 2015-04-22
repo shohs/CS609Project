@@ -11,17 +11,16 @@ namespace cs609.query
 {
   public class QueryParser
   {
-    public QueryParser(Database db, string queryString)
+    public QueryParser(string queryString)
     {
-      _db = db;
       _query = queryString.Trim();
     }
 
-    public Query ParseQuery()
+    public Query ParseQuery(Database db)
     {
       if (MatchKeyword("select "))
       {
-        return ParseSelectQuery();
+        return ParseSelectQuery(db);
       }
       else if (MatchKeyword("delete "))
       {
@@ -41,7 +40,31 @@ namespace cs609.query
       }
     }
 
-    private Query ParseSelectQuery()
+    public void CreateIndex(Database db)
+    {
+      bool create = false;
+      if (MatchKeyword("index "))
+      {
+        create = true;
+      }
+      else
+      {
+        MatchKeyword("deleteindex ");
+      }
+
+      string collectionList = ParseCollectionList();
+
+      if (create)
+      {
+        db.CreateIndex(collectionList);
+      }
+      else
+      {
+        db.DeleteIndex(collectionList);
+      }
+    }
+
+    private Query ParseSelectQuery(Database db)
     {
       AggregateFunction agr = null;
       bool hasAggregate = false;
@@ -113,6 +136,25 @@ namespace cs609.query
             }
 
             curNode = nextNode;
+          }
+
+          // The query is a candidate for being an index query
+          if (whereClauses.Count == 0)
+          {
+            string prefix = "";
+            for (int j = 0; j <= i; j++)
+            {
+              prefix += keys[j] + ".";
+            }
+
+            if (query.CanUseIndex(db, prefix))
+            {
+              Query q = query.ToIndexQuery(db, prefix);
+              if (q != null)
+              {
+                return q;
+              }
+            }
           }
         }
       }
@@ -496,7 +538,6 @@ namespace cs609.query
     }
 
     private string _query;
-    private Database _db;
     private int position = 0;
   }
 }

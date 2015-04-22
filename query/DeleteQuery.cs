@@ -101,6 +101,7 @@ namespace cs609.query
 
     private string _key;
     private DeleteQuery _subQuery;
+    public override IQuery SubQuery { get { return _subQuery; } }
     private IList<IQueryFilter> _filters;
   }
 }

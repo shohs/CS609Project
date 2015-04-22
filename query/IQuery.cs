@@ -10,5 +10,6 @@ namespace cs609.query
   public interface IQuery
   {
     INode Execute(INode data);
+    IQuery SubQuery { get; }
   }
 }
