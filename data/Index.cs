@@ -51,18 +51,39 @@ namespace cs609.data
       IDictionary<string, INode> subnodes = result.GetAllSubNodes();
       if (subnodes != null)
       {
+        bool giveWarning = false;
         foreach (KeyValuePair<string, INode> pair in subnodes)
         {
           INode node = pair.Value;
           string key = pair.Key;
 
           INode curNode = node;
-          for (int j = i + 1; j < fields.Length; j++)
+          try
           {
-            curNode = curNode.GetSubNode(fields[j]);
-          }
+            for (int j = i + 1; j < fields.Length; j++)
+            {
+              curNode = curNode.GetSubNode(fields[j]);
+            }
 
-          _tree.Insert(key, (IComparable)curNode.GetData(), node);
+            _tree.Insert(key, (IComparable)curNode.GetData(), node);
+          }
+          catch (KeyNotFoundException)
+          {
+            giveWarning = true;
+          }
+        }
+
+        if (giveWarning)
+        {
+          Console.ForegroundColor = ConsoleColor.DarkRed;
+          Console.WriteLine("Warning: some documents do not contain the indexed field and have been excluded from the index");
+          Console.ResetColor();
+        }
+        else
+        {
+          Console.ForegroundColor = ConsoleColor.DarkGreen;
+          Console.WriteLine("Index created successfully");
+          Console.ResetColor();
         }
       }
     }

@@ -96,24 +96,11 @@ namespace cs609.query
         }
 
         bool lte = false, gte = false;
-        if (filter0.Comparator.Equals(Comparators.LessThan))
-        {
-          lte = false;
-        }
-        else if (filter0.Comparator.Equals(Comparators.LessThanEq))
-        {
-          lte = true;
-        }
-        else
-        {
-          return null;
-        }
-
-        if (filter1.Comparator.Equals(Comparators.GreaterThan))
+        if (filter0.Comparator.Equals(Comparators.GreaterThan))
         {
           gte = false;
         }
-        else if (filter1.Comparator.Equals(Comparators.GreaterThanEq))
+        else if (filter0.Comparator.Equals(Comparators.GreaterThanEq))
         {
           gte = true;
         }
@@ -122,8 +109,21 @@ namespace cs609.query
           return null;
         }
 
+        if (filter1.Comparator.Equals(Comparators.LessThan))
+        {
+          lte = false;
+        }
+        else if (filter1.Comparator.Equals(Comparators.LessThanEq))
+        {
+          lte = true;
+        }
+        else
+        {
+          return null;
+        }
+
         Index index = db.GetIndex(fieldString);
-        IndexQuery iquery = new IndexQuery(index, filter0.CompareValue, filter1.CompareValue, lte, gte, _subQuery);
+        IndexQuery iquery = new IndexQuery(index, filter0.CompareValue, filter1.CompareValue, gte, lte, _subQuery);
         return iquery;
       }
       else if (_filters.Count == 1)

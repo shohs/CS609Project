@@ -91,11 +91,9 @@ namespace cs609
             {
                 switch (save)
                 {
-                    case "y":
                     case "yes":
                         _db.Checkpoint();
                         return "exit";
-                    case "n":
                     case "no":
                         return "exit";
                     case "cancel":
@@ -106,7 +104,7 @@ namespace cs609
                         break;
                 }
             } while (save != "yes" && save != "no");
-            return "exit";
+            return "";
         }
         private void DisplayStartUpText()
         {
@@ -138,13 +136,20 @@ namespace cs609
         private void DisplayQueryHelpText()
         {
             Console.ForegroundColor = ConsoleColor.DarkGreen;
+<<<<<<< HEAD
+            Console.WriteLine("Available Queries:");
+            Console.WriteLine("select - select *.*.first;");
+            Console.WriteLine("insert - insert { “first” : “Joe”, “last” : “Schmoe” } into students;");
+            Console.WriteLine("update - update students.jschmoe.first value Joel;");
+            Console.WriteLine("delete - delete students.* where students.*.first < “George”;");
+            Console.WriteLine("index - index students.*.id;");
+=======
             Console.WriteLine("Available Queries:"); 
             Console.WriteLine("select - select employee.first");
             Console.WriteLine("insert - insert { “first” : “Joe”, “last” : “Schmoe”, “department“ :“Sales“ } into employees.jschmoe");
-            Console.WriteLine("update - update employees.jschmoe.first value \"Joel\"");
+            Console.WriteLine("update - update employees.jschmoe.first value Joel");
             Console.WriteLine("delete - delete employees.* where employees.*.first < “Joel”");
-            Console.WriteLine("index - index employees.*.id;");
-            Console.WriteLine("deleteindex - deleteindex employees.*.id;");
+>>>>>>> b4e5b1065521a87263c9ff6da09bfd3bfcd6535b
             Console.ResetColor();
         }
 
