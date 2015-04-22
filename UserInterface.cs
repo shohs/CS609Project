@@ -134,11 +134,11 @@ namespace cs609
         private void DisplayQueryHelpText()
         {
             Console.ForegroundColor = ConsoleColor.DarkGreen;
-            Console.WriteLine("Available Queries:");
-            Console.WriteLine("select - select *.*.first");
-            Console.WriteLine("insert - insert { “first” : “Joe”, “last” : “Schmoe” } into students");
-            Console.WriteLine("update - update students.jschmoe.first value Joel");
-            Console.WriteLine("delete - delete students.* where students.*.first < “George”");
+            Console.WriteLine("Available Queries:"); 
+            Console.WriteLine("select - select employee.first");
+            Console.WriteLine("insert - insert { “first” : “Joe”, “last” : “Schmoe”, “department“ :“Sales“ } into employees.jschmoe");
+            Console.WriteLine("update - update employees.jschmoe.first value Joel");
+            Console.WriteLine("delete - delete employees.* where employees.*.first < “Joel”");
             Console.ResetColor();
         }
 
