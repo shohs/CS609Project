@@ -20,7 +20,7 @@ namespace cs609
         {
             DisplayStartUpText();
 
-            _db = new Database("MordorDb");
+            _db = new Database("MordorDB");
 
             //if time we can implement a choice of databases
             do
@@ -111,7 +111,7 @@ namespace cs609
             //Fancy Colors for extra points ;)
             Console.Write("Welcome to ");
             Console.ForegroundColor = ConsoleColor.DarkRed;
-            Console.WriteLine(String.Format("MordorDb{0}", Environment.NewLine));
+            Console.WriteLine(String.Format("MordorDB{0}", Environment.NewLine));
             Console.ResetColor();
 
             DisplayHelpText();

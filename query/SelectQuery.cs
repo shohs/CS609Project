@@ -50,7 +50,11 @@ namespace cs609.query
           {
             if (_subQuery != null)
             {
-              collection.SetNode(pair.Key, _subQuery.Execute(pair.Value));
+              INode subnode = _subQuery.Execute(pair.Value);
+              if (subnode != null && (subnode.GetAllSubNodes() == null || subnode.GetAllSubNodes().Count > 0))
+              { 
+                collection.SetNode(pair.Key, _subQuery.Execute(pair.Value));
+              }
             }
             else
             {
