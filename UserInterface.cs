@@ -31,33 +31,46 @@ namespace cs609
                 switch (_command.ToLower())
                 {
                     case "print":
+                    case "print;":
                     case "1":
                         _db.Print();
                         break;
                     case "checkpoint":
+                    case "checkpoint;":
                     case "2":
                         _db.Checkpoint();
+                        Console.ForegroundColor = ConsoleColor.DarkGreen;
+                        Console.WriteLine("Successfully created checkpoint.");
+                        Console.ResetColor();
                         break;
                     case "rollback":
+                    case "rollback;":
                     case "3":
                         _db.Rollback();
+                        Console.ForegroundColor = ConsoleColor.DarkGreen;
+                        Console.WriteLine("Successfully rolled back to last checkpoint.");
+                        Console.ResetColor();
                         break;
                     case "help":
+                    case "help;":
                     case "?":
                     case "4":
                         DisplayHelpText();
                         break;
 
                     case "clear":
+                    case "clear;":
                     case "5":
                         Console.Clear();
                         break;
 
                     case "exit":
+                    case "exit;":
                     case "6":
                         _command = Exit();
                         break;
                     case "query help":
+                    case "query help;":
                     case "7":
                         DisplayQueryHelpText();
                         break;
