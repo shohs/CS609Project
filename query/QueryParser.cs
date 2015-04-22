@@ -152,6 +152,10 @@ namespace cs609.query
               Query q = query.ToIndexQuery(db, prefix);
               if (q != null)
               {
+                if (hasAggregate)
+                {
+                  return new Aggregate(q, agr);
+                }
                 return q;
               }
             }
