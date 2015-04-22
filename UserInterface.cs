@@ -139,7 +139,7 @@ namespace cs609
             Console.WriteLine("Available Queries:"); 
             Console.WriteLine("select - select employee.first");
             Console.WriteLine("insert - insert { “first” : “Joe”, “last” : “Schmoe”, “department“ :“Sales“ } into employees.jschmoe");
-            Console.WriteLine("update - update employees.jschmoe.first value Joel");
+            Console.WriteLine("update - update employees.jschmoe.first value \"Joel\"");
             Console.WriteLine("delete - delete employees.* where employees.*.first < “Joel”");
             Console.WriteLine("index - index employees.*.id;");
             Console.WriteLine("deleteindex - deleteindex employees.*.id;");

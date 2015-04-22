@@ -336,14 +336,8 @@ namespace cs609.query
       string[] keys = collectionList.Split('.');
       UpdateQuery query = null;
       INode toUpdate;
-      if (argument.Contains('{'))
-      {
-        toUpdate = DataReader.ParseJSONString(argument);
-      }
-      else
-      {
-        toUpdate = new PrimitiveNode<string>(argument);
-      }
+      
+      toUpdate = DataReader.ParseJSONString(argument);
 
       for (int i = keys.Length - 1; i >= 0; i--)
       {
