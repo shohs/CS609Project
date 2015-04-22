@@ -61,53 +61,144 @@ namespace cs609.data
           curNode = iNode.Children[iNode.Size - 1];
         }
 
+        BPlusLeaf leaf = (BPlusLeaf)curNode;
+        if (leaf.Size == 0)
+        {
+          leaf.Values[0] = value;
+          leaf.Children[0] = new List<INode>();
+          leaf.Children[0].Add(node);
+          leaf.ChildrenKeys[0] = new List<string>();
+          leaf.ChildrenKeys[0].Add(key);
+          leaf.Size++;
+          return;
+        }
+
+        for (int i = 0; i < leaf.Size; i++)
+        {
+          if (leaf.Values[i].CompareTo(value) == 0)
+          {
+            leaf.Children[i].Add(node);
+            return;
+          }
+        }
+        
         if (curNode.Size == BranchingFactor)
         {
           // split the node
-        }
-        else
-        {
-          BPlusLeaf leaf = (BPlusLeaf)curNode;
-          if (leaf.Size == 0)
+          BPlusLeaf newLeaf = new BPlusLeaf();
+          int i;
+          for (i = 0; i < curNode.Size - 1; i++)
           {
-            leaf.Values[0] = value;
-            leaf.Children[0] = new List<INode>();
-            leaf.Children[0].Add(node);
-            leaf.ChildrenKeys[0] = new List<string>();
-            leaf.ChildrenKeys[0].Add(key);
-            leaf.Size++;
+            if (value.CompareTo(curNode.Values[i]) < 0)
+            {
+              break;
+            }
+          }
+
+          int halfway = BranchingFactor / 2;
+          if (i < halfway)
+          {
+            for (int j = 0; j < halfway; j++)
+            {
+              newLeaf.Children[j] = leaf.Children[halfway + j - 1];
+              leaf.Children[halfway + j - 1] = null;
+              newLeaf.ChildrenKeys[j] = leaf.ChildrenKeys[halfway + j - 1];
+              leaf.ChildrenKeys[halfway + j - 1] = null;
+              newLeaf.Values[j] = curNode.Values[halfway + j - 1];
+              leaf.Values[halfway + j - 1] = null;
+            }
+
+            for (int j = halfway - 1; j >= i; j--)
+            {
+              leaf.Children[j + 1] = leaf.Children[j];
+              leaf.Values[j + 1] = leaf.Values[j];
+            }
+            leaf.Children[i] = new List<INode>();
+            leaf.Children[i].Add(node);
+            leaf.ChildrenKeys[i] = new List<string>();
+            leaf.ChildrenKeys[i].Add(key);
+
+            leaf.Size = halfway;
+            newLeaf.Size = BranchingFactor - halfway + 1;
           }
           else
           {
-            for (int i = 0; i < leaf.Size; i++)
+            for (int j = halfway; j < BranchingFactor; j++)
             {
-              if (leaf.Values[i].CompareTo(value) == 0)
+              newLeaf.Children[j - halfway] = leaf.Children[j];
+              leaf.Children[j] = null;
+              newLeaf.ChildrenKeys[j - halfway] = leaf.ChildrenKeys[j];
+              leaf.ChildrenKeys[j] = null;
+              newLeaf.Values[j - halfway] = curNode.Values[j];
+              leaf.Values[j] = null;
+            }
+
+            for (int j = 0; j < BranchingFactor - halfway; i++)
+            {
+              if (newLeaf.Values[j].CompareTo(value) < 0)
               {
-                leaf.Children[i].Add(node);
-                return;
-              } 
-              else if (leaf.Values[i].CompareTo(value) < 0)
-              {
-                for (int j = leaf.Size - 1; j >= i + 1; j--)
+                for (int k = leaf.Size - 1; k >= i + 1; k--)
                 {
-                  leaf.Values[j + 1] = leaf.Values[j];
-                  leaf.Children[j + 1] = leaf.Children[j];
+                  newLeaf.Values[k + 1] = newLeaf.Values[k];
+                  newLeaf.Children[k + 1] = newLeaf.Children[k];
                 }
-                leaf.Values[i + 1] = value;
-                leaf.Children[i + 1] = new List<INode>();
-                leaf.Children[i + 1].Add(node);
-                leaf.ChildrenKeys[i + 1] = new List<string>();
-                leaf.ChildrenKeys[i + 1].Add(key);
+                newLeaf.Values[j + 1] = value;
+                newLeaf.Children[j + 1] = new List<INode>();
+                newLeaf.Children[j + 1].Add(node);
+                newLeaf.ChildrenKeys[j + 1] = new List<string>();
+                newLeaf.ChildrenKeys[j + 1].Add(key);
                 return;
               }
             }
-            leaf.Values[leaf.Size] = value;
-            leaf.Children[leaf.Size] = new List<INode>();
-            leaf.Children[leaf.Size].Add(node);
-            leaf.ChildrenKeys[leaf.Size] = new List<string>();
-            leaf.ChildrenKeys[leaf.Size].Add(key);
-            leaf.Size++;
+            newLeaf.Values[BranchingFactor - halfway] = value;
+            newLeaf.Children[BranchingFactor - halfway] = new List<INode>();
+            newLeaf.Children[BranchingFactor - halfway].Add(node);
+            newLeaf.ChildrenKeys[BranchingFactor - halfway] = new List<string>();
+            newLeaf.ChildrenKeys[BranchingFactor - halfway].Add(key);
+            newLeaf.Size++;
+
           }
+
+          if (curNode.Parent == null)
+          {
+            BPlusInternalNode parent = new BPlusInternalNode();
+            parent.Size = 1;
+            parent.Values[0] = newLeaf.Values[0];
+            parent.Children[0] = leaf;
+            parent.Children[1] = newLeaf;
+            leaf.Parent = parent;
+            newLeaf.Parent = parent;
+          }
+          else
+          {
+
+          }
+        }
+        else
+        {
+          for (int i = 0; i < leaf.Size; i++)
+          {
+            if (leaf.Values[i].CompareTo(value) < 0)
+            {
+              for (int j = leaf.Size - 1; j >= i + 1; j--)
+              {
+                leaf.Values[j + 1] = leaf.Values[j];
+                leaf.Children[j + 1] = leaf.Children[j];
+              }
+              leaf.Values[i + 1] = value;
+              leaf.Children[i + 1] = new List<INode>();
+              leaf.Children[i + 1].Add(node);
+              leaf.ChildrenKeys[i + 1] = new List<string>();
+              leaf.ChildrenKeys[i + 1].Add(key);
+              return;
+            }
+          }
+          leaf.Values[leaf.Size] = value;
+          leaf.Children[leaf.Size] = new List<INode>();
+          leaf.Children[leaf.Size].Add(node);
+          leaf.ChildrenKeys[leaf.Size] = new List<string>();
+          leaf.ChildrenKeys[leaf.Size].Add(key);
+          leaf.Size++;
         }
       }
 
@@ -201,6 +292,7 @@ namespace cs609.data
       {
         bool IsLeaf { get; }
         int Size { get; set; }
+        BPlusNode Parent { get; set; }
         IComparable[] Values { get; }
       }
 
@@ -208,7 +300,7 @@ namespace cs609.data
       {
         public int Size { get; set; }
         public bool IsLeaf { get { return false; } }
-        public BPlusNode Parent = null;
+        public BPlusNode Parent { get; set; }
         public BPlusNode[] Children = new BPlusNode[BranchingFactor];
         public IComparable[] Values { get { return _values; } }
         private IComparable[] _values = new IComparable[BranchingFactor - 1];
@@ -219,7 +311,7 @@ namespace cs609.data
         public BPlusLeaf Next = null;
         public int Size { get; set; }
         public bool IsLeaf { get { return true; } }
-        public BPlusNode Parent = null;
+        public BPlusNode Parent { get; set; }
         public IList<INode>[] Children = new List<INode>[BranchingFactor - 1];
         public IList<string>[] ChildrenKeys = new List<string>[BranchingFactor - 1];
         public IComparable[] Values { get { return _values; } }

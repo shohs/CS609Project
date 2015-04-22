@@ -391,7 +391,8 @@ namespace cs609.query
       else
       {
         endPosition = position;
-        while (endPosition < _query.Length && (char.IsLetterOrDigit(_query[endPosition]) || _query[endPosition] == '"'))
+        while (endPosition < _query.Length && (char.IsLetterOrDigit(_query[endPosition]) || _query[endPosition] == '"' 
+            || _query[endPosition] == '-' || _query[endPosition] == '_'))
         {
           ++endPosition;
         }
@@ -405,7 +406,8 @@ namespace cs609.query
     private string ParseLiteral()
     {
       StringBuilder literal = new StringBuilder();
-      while (position < _query.Length && (char.IsLetterOrDigit(_query[position]) || _query[position] == '"'))
+      while (position < _query.Length && (char.IsLetterOrDigit(_query[position]) || _query[position] == '"' 
+          || _query[position] == '-' || _query[position] == '_'))
       {
         literal.Append(_query[position++]);
       }

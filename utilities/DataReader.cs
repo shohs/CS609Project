@@ -58,7 +58,7 @@ namespace cs609.utilities
       StringBuilder tokenBuilder = new StringBuilder();
 
       System.Globalization.NumberFormatInfo format = new System.Globalization.NumberFormatInfo();
-      while (char.IsDigit((char)reader.Peek()) || format.NumberDecimalSeparator.Contains((char)reader.Peek()))
+      while (char.IsDigit((char)reader.Peek()) || format.NumberDecimalSeparator.Contains((char)reader.Peek()) || (char)reader.Peek() == '-')
       {
         tokenBuilder.Append((char)reader.Read());
       }
