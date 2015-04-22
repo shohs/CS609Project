@@ -55,9 +55,11 @@ namespace cs609
 
                     case "exit":
                     case "6":
-                        _command = "exit";
-                        // Checkpoint should save the data
-                        _db.Checkpoint();
+                        _command = Exit();
+                        break;
+                    case "query help":
+                    case "7":
+                        DisplayQueryHelpText();
                         break;
 
                     default:
@@ -81,6 +83,29 @@ namespace cs609
             } while (!_command.Equals("exit"));
         }
 
+        private string Exit()
+        {
+            Console.WriteLine("Do you want to save all changes before exiting?");
+            var save = Console.ReadLine();
+            do
+            {
+                switch (save)
+                {
+                    case "yes":
+                        _db.Checkpoint();
+                        return "exit";
+                    case "no":
+                        return "exit";
+                    case "cancel":
+                        return "";
+                    default:
+                        Console.WriteLine("Enter yes, no or cancel.");
+                        save = Console.ReadLine();
+                        break;
+                }
+            } while (save != "yes" && save != "no");
+            return "";
+        }
         private void DisplayStartUpText()
         {
             //Fancy Colors for extra points ;)
@@ -102,7 +127,18 @@ namespace cs609
             Console.WriteLine("4) help - displays a list of commands");
             Console.WriteLine("5) clear - clear the terminal");
             Console.WriteLine("6) exit - this ends the program");
-            Console.WriteLine("You may also query the database.");
+            Console.WriteLine("7) query help - for help with the queries or you may enter your query here");
+            Console.ResetColor();
+        }
+
+        private void DisplayQueryHelpText()
+        {
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
+            Console.WriteLine("Available Queries:");
+            Console.WriteLine("select - select *.*.first");
+            Console.WriteLine("insert - insert { “first” : “Joe”, “last” : “Schmoe” } into students");
+            Console.WriteLine("update - update students.jschmoe.first value Joel");
+            Console.WriteLine("delete - delete students.* where students.*.first < “George”");
             Console.ResetColor();
         }
 
